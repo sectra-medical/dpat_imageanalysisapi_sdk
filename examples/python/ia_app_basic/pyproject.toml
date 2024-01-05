@@ -1,0 +1,39 @@
+[tool]
+[tool.poetry]
+name = "pcaddemo"
+version = "0.1.0"
+description = ""
+authors = ["Martin Lindvall <martin.lindvall@sectra.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.6,<4"
+Flask = ">=1.0"
+minilog = ">=1.2"
+requests = ">=2.22"
+shapely = ">=1.6"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+dephell = "dephell.cli:entrypoint"
+
+[tool.dephell]
+[tool.dephell.main]
+from = {format = "poetry", path = "pyproject.toml"}
+to = {format = "setuppy", path = "setup.py"}
+versioning = "semver"
+
+#[tool.dephell.lock]
+#from = {format = "poetry", path = "pyproject.toml"}
+#to = {format = "poetrylock", path = "poetry.lock"}
+
+[tool.dephell.poetry]
+# read dependencies from poetry format
+from = {format = "poetry", path = "pyproject.toml"}
+# run command `poetry install`
+command = "poetry install -vvv"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
