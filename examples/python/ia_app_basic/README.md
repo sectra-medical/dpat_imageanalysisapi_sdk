@@ -18,6 +18,11 @@ For simplicity, uses no async libraries. For load-scaling, simply run with numbe
 
 Should have no trouble scaling as long as number of max simultaneous users are below 1000 or so.
 
+### Prerequisites
+
+You currently need libgeos to build shapely. On ubuntu `sudo apt install libgeos-dev`.
+The shapely dependency will eventually be removed.
+
 ### Install and run
 
 You can run this example in a virtualenv using poetry, or directly in the current python environment.
