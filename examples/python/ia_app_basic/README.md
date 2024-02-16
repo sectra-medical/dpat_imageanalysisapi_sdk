@@ -24,13 +24,14 @@ You can run this example in a virtualenv using poetry, or directly in the curren
 
 Using poetry:
 ```
+poetry install
 poetry run python pcaddemo/__main__.py
 ```
 
 As plain-old python:
 
 ```
-python setup.py develop
+pip install -e .
 python pcaddemo/__main__.py
 ```
 
