@@ -22,8 +22,8 @@ An application that allows the user to call a predefined python script, for exam
 
 ## Application 3: send_annotations_server.py
 
-An application that allows the user to define a region and a tag and have the coordinates and the tag of the annotations saved, as well as the annotation sent back for display and the slide downloaded. This type of annotation,
-This allows for annotation collection within Sectra, as opposed to default sectra annotation which can only be downloaded manually.
+An application that allows the user to define a region and a tag and have the coordinates and the tag of the annotations saved, as well as the annotation sent back for display and the slide downloaded.
+This allows for annotation collection within Sectra, as opposed to default sectra annotations which can only be downloaded manually.
 
 - Input: User draws a polygon around a region of interest and associates a tag
 - Output: a graphical primitive corresponding to the drawn region; slide name, slide id sectra coordinates, unnormalized coordinates and tag entry are saved in an excel sheet; the slide is downloaded if not present
@@ -41,7 +41,9 @@ In each script, the IP used must be specified and default port 5000 is assumed. 
 
 Applications can then be launched using:
 
+```
 python <python_script>.py
+```
 
 
 ## Sectra Server configuration
@@ -57,7 +59,7 @@ You need to configure the Sectra Pathology Server (SPS) to call this server. Thi
   - Under Server Side Applications, click 'register new'
   - Enter the URL where your started web server is running, as reachable from the pathology server. Example: `http://<IP>:5000/Get_token` for generate_tokens_server.py
   - Specify the application id, display name and manufacturer
-  - For input template, use "{"type":"wholeSlide"}" for generate_tokens_server.py and launch_analysis_server.py and {"type":"taggedPolygon","content":{"tags":["Tag1","Tag2"]}} for send_annotations_server.py
+  - For input template, use "{"type":"wholeSlide"}" for generate_tokens_server.py and launch_analysis_server.py and "{"type":"taggedPolygon","content":{"tags":["Tag1","Tag2"]}}" for send_annotations_server.py
   - Alternatively, these can be autopopulated using the retrieve registration info button if the server is running
   - press *Save*
   - Per default, the app is disabled. Click the 'disabled' button to toggle it to enabled.

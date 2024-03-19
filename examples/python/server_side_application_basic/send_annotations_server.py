@@ -55,7 +55,7 @@ def handle_annotation_get_request():
     "applicationId": "sendAnnotations",
     "displayName": "Send annotations",
     "manufacturer": "HUG",
-    "url": "http://<IP>:<PORT>/send_annotation",
+    "url": "http://<IP>:5000/send_annotation",
     "inputTemplate": {
         "type": "taggedPolygon",
         "content": {
