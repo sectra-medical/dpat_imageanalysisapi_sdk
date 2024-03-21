@@ -5,7 +5,6 @@ import requests
 import subprocess
 import os
 
-#Server-side application to launch a python script.
 
 def download_info(callbackUrl, slideId, header):
     """
@@ -53,6 +52,7 @@ def handle_analysis_run_post_request():
         info = download_info(url, slideId, header)
         slideName = info["lisSlideId"]
 
+	#arguments typically will use recovered values such as slideName, slideId, etc
         cmd_hp=f'cmd /k "<path_to_python.exe> <path_to_python_script> <arguments>"'
         subprocess.Popen(cmd_hp, creationflags=subprocess.CREATE_NEW_CONSOLE)
 

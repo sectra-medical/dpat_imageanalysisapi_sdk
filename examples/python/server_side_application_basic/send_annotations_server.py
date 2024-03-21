@@ -7,10 +7,6 @@ import os
 from requests_toolbelt.multipart import decoder
 from cgi import parse_header
 
-# Launches server-side application for saving annotations coordinates and downloading image. Slide name, slide id,
-# Sectra coordinates, unnormalized coordinates and tag are saved in an excel sheet. The associated slide is downloaded
-# if not already present.
-
 def download_picture(outputPath,callbackUrl, slideId, header,anonym_name):
     """
     Download image from Sectra into the specified path with specified name.

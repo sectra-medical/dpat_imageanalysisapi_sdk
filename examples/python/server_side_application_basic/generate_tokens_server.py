@@ -3,8 +3,6 @@ import json
 import pandas as pd
 import requests
 
-# launches server-side application to save tokens for API interaction, using PC IP and default 5000 port. The slide name, slide id
-# callback url and token generated are saved in an excel sheet.
 
 def download_info(callbackUrl, slideId, header):
     """

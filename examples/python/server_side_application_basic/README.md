@@ -59,7 +59,7 @@ You need to configure the Sectra Pathology Server (SPS) to call this server. Thi
   - Under Server Side Applications, click 'register new'
   - Enter the URL where your started web server is running, as reachable from the pathology server. Example: `http://<IP>:5000/Get_token` for generate_tokens_server.py
   - Specify the application id, display name and manufacturer
-  - For input template, use "{"type":"wholeSlide"}" for generate_tokens_server.py and launch_analysis_server.py and "{"type":"taggedPolygon","content":{"tags":["Tag1","Tag2"]}}" for send_annotations_server.py
+  - For input template, use "{"type":"wholeSlide"}" for generate_tokens_server.py and launch_analysis_server.py and "{"type":"taggedPolygon","content":{"tags":["Tag1","Tag2"]}}" (i.e. the desired tags) for send_annotations_server.py
   - Alternatively, these can be autopopulated using the retrieve registration info button if the server is running
   - press *Save*
   - Per default, the app is disabled. Click the 'disabled' button to toggle it to enabled.
