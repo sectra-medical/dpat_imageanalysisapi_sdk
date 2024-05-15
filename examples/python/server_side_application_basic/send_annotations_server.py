@@ -7,7 +7,9 @@ import os
 from requests_toolbelt.multipart import decoder
 from cgi import parse_header
 
-def download_picture(outputPath,callbackUrl, slideId, header,anonym_name):
+IP = "<IP>"
+
+def download_image(outputPath,callbackUrl, slideId, header,anonym_name):
     """
     Download image from Sectra into the specified path with specified name.
     """
@@ -40,8 +42,6 @@ def unnormalize_point_coordinates(points, slide_width):
     """
     return [{"x": point["x"] * slide_width, "y": point["y"] * slide_width} for point in points]
 
-
-IP = "<IP>"
 
 app = Flask(__name__)
 
@@ -76,7 +76,7 @@ def handle_annotation_get_info_request():
 
 @app.route('/send_annotation', methods=['POST'])
 def handle_annotation_post_request():
-    csv_file_path = "annotations.xlsx"
+    csv_file_path = "annotations.csv"
     images_path = "annotated_slides"
     data = request.json
   
@@ -106,7 +106,7 @@ def handle_annotation_post_request():
         tag = tags[tagIndex]
 
         try:
-            df = pd.read_excel(csv_file_path)
+            df = pd.read_csv(csv_file_path)
         except FileNotFoundError:
             df = pd.DataFrame(columns=["slide_name", "slide_id", "points", "unnormalized_points", "tag"])
 
@@ -121,9 +121,9 @@ def handle_annotation_post_request():
 
         df = pd.concat([df, new_slide.to_frame().T], ignore_index=True)
 
-        df.to_excel(csv_file_path, index=False)
+        df.to_csv(csv_file_path, index=False)
 
-        download_picture(images_path,url, slideId, header,slide_name)
+        download_image(images_path,url, slideId, header,slide_name)
 
         payload = {
             "slideId": slideId,

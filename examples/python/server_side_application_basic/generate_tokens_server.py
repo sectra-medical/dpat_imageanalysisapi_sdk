@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import requests
 
+IP = "<IP>"
 
 def download_info(callbackUrl, slideId, header):
     """
@@ -11,25 +12,24 @@ def download_info(callbackUrl, slideId, header):
     pull_info = requests.get(url=callbackUrl + "/slides/" + slideId+"/info?scope=extended&includePHI=true", verify=False, headers=header, stream=True)
     return pull_info.json()
 
-IP = "<IP>"
-token_file = "tokens.xlsx"
+token_file = "tokens.csv"
 
 
 app = Flask(__name__)
 
-@app.route('/Get_token', methods=['GET'])
+@app.route('/get_token', methods=['GET'])
 def handle_get_token_get_request():
     registration_response = jsonify({
     "applicationId": "<applicationId>",
     "displayName": "Get token",
     "manufacturer": "HUG",
-    "url": "http://<IP>:5000/Get_token",
+    "url": "http://<IP>:5000/get_token",
     "inputTemplate":{"type":"wholeSlide"}
     })
     return registration_response
 
 # should return info according to API documentation
-@app.route('/Get_token/info', methods=['GET'])
+@app.route('/get_token/info', methods=['GET'])
 def handle_get_token_get_info_request():
     info = jsonify({
     "apiVersion": "1.7",
@@ -37,7 +37,7 @@ def handle_get_token_get_info_request():
     })
     return info
 
-@app.route('/Get_token', methods=['POST'])
+@app.route('/get_token', methods=['POST'])
 def handle_get_token_post_request():
     data = request.json 
     
@@ -49,7 +49,7 @@ def handle_get_token_post_request():
     slideName = info["lisSlideId"]
     
     try:
-        df = pd.read_excel(token_file)
+        df = pd.read_csv(token_file)
     except FileNotFoundError:
         df = pd.DataFrame(columns=["slide_name",  "slide_id",
                                    "url", "token"])
@@ -63,7 +63,7 @@ def handle_get_token_post_request():
     
     df = pd.concat([df, new_slide.to_frame().T], ignore_index=True)    
 
-    df.to_excel(token_file, index=False)
+    df.to_csv(token_file, index=False)
 
     return '', 200
 

@@ -5,6 +5,7 @@ import requests
 import subprocess
 import os
 
+IP = "<IP>"
 
 def download_info(callbackUrl, slideId, header):
     """
@@ -13,7 +14,6 @@ def download_info(callbackUrl, slideId, header):
     pull_info = requests.get(url=callbackUrl + "/slides/" + slideId+"/info?scope=extended&includePHI=true", verify=False, headers=header, stream=True)
     return pull_info.json()
 
-IP = "<IP>"
 
 @app.route('/Analysis_run', methods=['GET'])
 def handle_analysis_run_get_request():
