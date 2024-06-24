@@ -28,6 +28,21 @@ This allows for annotation collection within Sectra, as opposed to default sectr
 - Input: User draws a polygon around a region of interest and associates a tag
 - Output: a graphical primitive corresponding to the drawn region; slide name, slide id sectra coordinates, unnormalized coordinates and tag entry are saved in an excel sheet; the slide is downloaded if not present
 
+## Application 4: feedback_server.py
+
+An application that displays precomputed results in the Sectra viewer using the patchCollection type result and allows the user to send feedback on correctly or incorrectly classified patches. The gallery view can be a more convenient way to visualize patch-based outputs than primitive annotations and allows for interaction with the user.
+
+This example expects two prediction labels (positive and negative) and two feedback categories (positive (feedback) and negative (feedback)). The user can within the viewer drag the patch to the appropriate category or select the new category at the center of the viewer when selecting a patch.
+
+Precomputed results for a slide are expected to be saved as a csv file, where rows are: the slide name ("lisSlideId" from Sectra metadata), the path to the associated patch image, the x coordinate of the center of the patch in Sectra coordinates, the y coordinate of the center of the patch in Sectra coordinates, the sort_key for ordering patches, the prediction label, and the tag (category where the patch will be displayed in Sectra). Additionally, the patch images are saved.
+
+Once the user has changed the patch category for feedback, the user can click on “Send feedback results”. This will generate four folders (TP,FP,FN,TN) correspond to true positives, false positives, false negatives, true negatives; saved results patches will then be copied to the appropriate folder, using the new tag associated to the patch sent for feedback. The user can send feedback multiple times, as the older folders are removed and recreated.
+
+The “feedback” folder in the repo shows an example of the output folder structure and precomputed results csv file for a slide.
+
+
+- Input: 
+- Output: gallery view display of precomputed results
 
 ### Install and run
 
