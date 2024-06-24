@@ -10,7 +10,6 @@ from flask import Flask, request, jsonify
 from requests_toolbelt.multipart import decoder
 from utils import download_info, download_image, remove_folders
 
-# TODO: change IP
 IP = "<IP>"
 APPLICATION_ID = "Feedback"
 
