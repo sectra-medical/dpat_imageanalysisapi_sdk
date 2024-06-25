@@ -40,6 +40,8 @@ Once the user has changed the patch category for feedback, the user can click on
 
 The “feedback” folder in the repo shows an example of the output folder structure and precomputed results csv file for a slide.
 
+To note, the gallery view also expects one or more polygons object to be sent - in the example there is one polygon with full slide dimension, but the polygons could for example correspond to which regions have been analyzed.
+
 
 - Input: 
 - Output: gallery view display of precomputed results
