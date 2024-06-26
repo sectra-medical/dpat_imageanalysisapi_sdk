@@ -182,9 +182,9 @@ def handle_feedback_post_request():
                                             f"{feedback_path}\\{slideName}\\TN\\{img_name}")
 
                 # update data and add Id for modify result
-                newData = data['input']['data']
-                resultId = data['input']['id']
-                versionId = data['input']['versionId']
+                newData = data['input']['data'] #data with new tags after user interaction
+                resultId = data['input']['id'] #id of result to update
+                versionId = data['input']['versionId'] #version of the result to update
                 payload["versionId"] = versionId
                 payload["data"] = newData
                 payload_json = json.dumps(payload)

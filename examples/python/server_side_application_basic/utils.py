@@ -22,7 +22,7 @@ def download_image(outputPath,callbackUrl, slideId, header,anonym_name):
     else:
         print(f"Directory '{folder_path}' already exists. Image not downloaded.")
         return os.path.normpath(os.path.join(outputPath,anonym_name))
-    pull_dcm = requests.get(url=callbackUrl + "/slides/" + slideId + "/files", verify=False, headers=header, stream=True) #CAVE: downloaded images are NOT anonymized
+    pull_dcm = requests.get(url=callbackUrl + "/slides/" + slideId + "/files", verify=False, headers=header, stream=True) #NOTE: downloaded images are NOT anonymized
     decoder_mime = decoder.MultipartDecoder.from_response(pull_dcm)
     for part in decoder_mime.parts:
         _, dict = parse_header(str(part.headers[b"content-disposition"]))
