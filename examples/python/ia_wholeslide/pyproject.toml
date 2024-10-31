@@ -1,0 +1,24 @@
+[project]
+name = "dpat-wholeslide"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Martin Lindvall", email = "martin.lindvall@sectra.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.0.3",
+    "requests-toolbelt>=1.0.0",
+    "requests>=2.32.3",
+    "tqdm>=4.67.0",
+    "pillow>=11.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+]

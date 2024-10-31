@@ -18,8 +18,6 @@ app = Flask(__name__)
 APP_NAME = "ImageAnalysisDemo"
 APP_MANUFACTURER = "Sectra (demo)"
 BIND_PORT = 5005
-DEMO_TYPE = "gallery"  # use 'polygon' or 'gallery'
-
 
 def json_resp(data):
     """serialize data to JSON and add appropriate IA-api headers"""
@@ -71,7 +69,7 @@ def app_return_registerinfo():
         "url": f"http://{hostname}/iademo",
         "manufacturer": APP_MANUFACTURER,
         "inputTemplate": {"type": "taggedPolygon", "content": {"tags": []}},
-        "context": {},
+        "context": {"gallery": False},
     }
     return json_resp(data)
 
@@ -90,16 +88,17 @@ def app_on_userinput():
     response = {}
     data = request.get_json()
 
-    # save_filename = f"./debug/{data['action']}_tmp.json"
-    # with open(save_filename, 'w') as file:
-    #   json.dump(data, file)
+    save_filename = f"./debug/userinput_{data['action']}_tmp.json"
+    with open(save_filename, 'w') as file:
+        json.dump(data, file)
 
     # data['action'] :: create, modify, delete, cancel
     if data["action"] == "create":
-        if DEMO_TYPE == "polygon":
-            return app_create_primitiveArea(data)
-        else:
+        use_patch_gallery = "gallery" in data["context"] and data["context"]["gallery"]
+        if use_patch_gallery:
             return app_create_patchCollection(data)
+        else:
+            return app_create_primitiveArea(data)
     elif data["action"] == "modify":
         for button in data["input"]["data"]["result"]["content"]["actions"]:
             if button["state"] == 1:
@@ -121,12 +120,16 @@ def app_create_primitiveArea(data):
 
     this demo implementation simply returns the input geometry with a label attached
     """
-    input_polygon = data["input"]["content"]["polygon"]
-    plg = sectra_polygon_to_shapely(input_polygon)
-    # determine suitable placement of label text
-    min_y_pt = reduce(
-        lambda pt1, pt2: pt2 if pt2[1] < pt1[1] else pt1, plg.exterior.coords
-    )
+    # this demo app supports being configured as either type: multiArea or type: taggedPolygon
+    input_polygons = []
+    if data["input"]["type"] == "taggedPolygon":
+        input_polygons = [data["input"]["content"]["polygon"]]
+    elif data["input"]["type"] == "multiArea":
+        input_polygons = data["input"]["content"]["polygons"]
+
+    # determine suitable label placement (choose uppermost point in polygon)
+    all_points = [pt for polyg in input_polygons for pt in polyg["points"]]
+    min_y_pt = reduce(lambda pt1, pt2: pt2 if pt2["y"] < pt1["y"] else pt1, all_points)
 
     text = "0 demo-positive cells found."
 
@@ -134,9 +137,9 @@ def app_create_primitiveArea(data):
         "type": "primitive",
         "content": {
             "style": {"fillStyle": None, "size": None, "strokeStyle": "#FFA500"},
-            "polygons": [input_polygon],  # same area as user input,
+            "polygons": input_polygons,  # same area as user input,
             "labels": [
-                {"location": {"x": min_y_pt[0], "y": min_y_pt[1]}, "label": text}
+                {"location": min_y_pt, "label": text}
             ],
         },
     }
@@ -233,6 +236,7 @@ def app_modify_button(button_id, data):
 def app_delete(data):
     """result has been deleted by the user, and our app is informed"""
     # do not intervene (will get the result deleted)
+    # TODO: server does not like empty response any more?
     return json_resp({})
 
 

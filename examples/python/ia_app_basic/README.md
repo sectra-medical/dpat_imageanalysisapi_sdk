@@ -1,5 +1,4 @@
-pcaddemo
-========
+# pcaddemo
 
 ## About
 This is a demo repository for a simple Sectra Image Analysis API (IA-API) implementation.

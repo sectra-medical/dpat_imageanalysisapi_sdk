@@ -1,31 +1,28 @@
 # Sectra Digital Pathology (DPAT) ImageAnalysis (IA) API - Software Development Kit (SDK)
 
 ## About
-This is a work in progress repository providing examples on how to integrate with the Sectra IA-API.
+This repository provides examples on integrating with the Sectra IA-API using python code.
 
-Currently only a basic application exist that returns (random) results given user input.
+The `examples` folder provides two examples that are suitable to get started.
+Coding style is intentionally minimalistic, aiming for quick and easy reading, as we expect downstream users to apply their own style and preferences.
 
-See the `examples` folder for more info. A roadmap is available under [milestones](https://github.com/sectra-medical/dpat_imageanalysisapi_sdk/milestones)
+## Contributing
 
-## Plan for Sectra-led contributions
+We are open to accept contributions. This could be:
 
-### 2024, January
+- typed clients (e.g. implementing the API specification as dataclasses)
+- further examples (likely to be placed below a `contrib/` folder)
 
-- Invite collaborators to vet/discuss the basic example
+## Planned extensions
 
-### 2024, June
-
-- Finalize image notification python examples (M1 milestone)
-
-### 2024, August
-
-- Make project fully public (remove invite-only)
-
-### 2024, December
-
-- Finalize extended "best practices" example (M2 milestone)
+We plan on adding example code for integrating with IDS7 worklists by sending HL7v2 messages.
 
 ## Changelog
+
+### 2024-11-20
+
+- Add background image processing example ( `examples/python/ia_wholeslide` )
+- Make the repository public
 
 ### 2024-06-13
 

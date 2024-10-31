@@ -1,0 +1,35 @@
+# Temporary Python files
+*.pyc
+*.egg-info
+__pycache__
+.ipynb_checkpoints
+
+# Temporary OS files
+Icon*
+
+# Temporary virtual environment files
+/.cache/
+/.venv/
+
+# Temporary server files
+.env
+*.pid
+
+# Build and release directories
+/build/
+/dist/
+/debug/
+*.spec
+
+# Sublime Text
+*.sublime-workspace
+
+# Eclipse
+.settings
+
+# Don't include
+scripts
+.python-version
+
+data/queue
+data/requests
