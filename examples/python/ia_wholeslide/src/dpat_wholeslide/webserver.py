@@ -21,6 +21,7 @@ BIND_PORT = 5006
 
 # -------- Utils --------
 
+
 def json_resp(data):
     """serialize response data to JSON and add appropriate IA-api headers"""
     resp = jsonify(data)
@@ -28,7 +29,9 @@ def json_resp(data):
     resp.headers.set("X-Sectra-SoftwareVersion", __version__)
     return resp
 
+
 # -----------------------
+
 
 @app.route("/", methods=["GET"])
 def index():
@@ -51,16 +54,15 @@ def index():
 # IA-API Implementation
 # =====================
 
+
 @app.route("/dpat_ia_app_demo/wholeslide/info", methods=["GET"])
 def app_return_info():
     """
     route returning application info according to the DPAT IA API specification
     """
-    data = {
-        "apiVersion": SECTRA_IA_API_MIN_VERSION,
-        "softwareVersion": __version__
-    }
+    data = {"apiVersion": SECTRA_IA_API_MIN_VERSION, "softwareVersion": __version__}
     return json_resp(data)
+
 
 @app.route("/dpat_ia_app_demo/wholeslide", methods=["GET"])
 def app_return_registerinfo():
@@ -122,7 +124,9 @@ def app_on_imagenotification():
     # specification says we should return 200, empty
     return json_resp({})
 
+
 # =========================================
+
 
 def app_add_wsi_to_processing_queue(data):
     """
@@ -134,9 +138,9 @@ def app_add_wsi_to_processing_queue(data):
     slide_id = data["slideId"]
 
     # fetch basic slide metadata
-    api = requests_session_from_callbackinfo(data['callbackInfo'])
+    api = requests_session_from_callbackinfo(data["callbackInfo"])
     r = api.get(f"slides/{slide_id}/info?scope=extended&includePHI=true")
-    r.raise_for_status() # raise on error
+    r.raise_for_status()  # raise on error
     metadata = r.json()
 
     # persist user request in a file-based queue
@@ -146,27 +150,36 @@ def app_add_wsi_to_processing_queue(data):
     case_name = metadata["accessionNumber"]
     block_name = metadata["block"]["displayName"]
     stain_name = metadata["staining"]["displayName"]
-    stable_slide_id = hashlib.sha1(f"{metadata['seriesInstanceUid']}".encode("UTF-8")).hexdigest()[:10]
+    stable_slide_id = hashlib.sha1(
+        f"{metadata['seriesInstanceUid']}".encode("UTF-8")
+    ).hexdigest()[:10]
 
     # write metadata to a requests folder
-    data_folder = Path(f"./data/requests/{case_name}/{block_name}-{stain_name}-{stable_slide_id}")
+    data_folder = Path(
+        f"./data/requests/{case_name}/{block_name}-{stain_name}-{stable_slide_id}"
+    )
     data_folder.mkdir(parents=True, exist_ok=True)
 
-    metadata_filename = data_folder/"metadata.json"
-    with open(metadata_filename, 'w') as file:
+    metadata_filename = data_folder / "metadata.json"
+    with open(metadata_filename, "w") as file:
         json.dump(metadata, file)
 
-    save_filename = data_folder/f"request_user-{datetime.now().strftime('%Y%m%d%H%M%S')}.json"
-    with open(save_filename, 'w') as file:
+    save_filename = (
+        data_folder / f"request_user-{datetime.now().strftime('%Y%m%d%H%M%S')}.json"
+    )
+    with open(save_filename, "w") as file:
         json.dump(data, file)
 
     # also write a file in a flat queue folder, this folder will represent
     # the "active" queue and the data folder can be a larger repository of all requests
     queue_folder = Path("./data/queue")
     queue_folder.mkdir(parents=True, exist_ok=True)
-    slide_queue_file = queue_folder/f"{case_name}-{block_name}-{stain_name}-{stable_slide_id}.txt"
-    slide_queue_file.write_text(f"../../{save_filename}\n") # persist a "link" to the most recent metadata
-
+    slide_queue_file = (
+        queue_folder / f"{case_name}-{block_name}-{stain_name}-{stable_slide_id}.txt"
+    )
+    slide_queue_file.write_text(
+        f"../../{save_filename}\n"
+    )  # persist a "link" to the most recent metadata
 
     # prepare to store a progress label visible to users
     text = "analysis queued"
@@ -184,14 +197,27 @@ def app_add_wsi_to_processing_queue(data):
             "result": {
                 "type": "primitive",
                 "content": {
-                    "style": {"fillStyle": None, "size": None, "strokeStyle": "#FFA500"},
-                    "polygons": [{"points": [{"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 0.0}, {"x": 1.0, "y": max_y}, {"x": 0.0, "y": max_y}]}],
+                    "style": {
+                        "fillStyle": None,
+                        "size": None,
+                        "strokeStyle": "#FFA500",
+                    },
+                    "polygons": [
+                        {
+                            "points": [
+                                {"x": 0.0, "y": 0.0},
+                                {"x": 1.0, "y": 0.0},
+                                {"x": 1.0, "y": max_y},
+                                {"x": 0.0, "y": max_y},
+                            ]
+                        }
+                    ],
                     "labels": [
                         # place label at the top center
                         {"location": {"x": 0.5, "y": 0.0}, "label": text}
                     ],
                 },
-            }
+            },
         },
     }
 
@@ -204,9 +230,14 @@ def app_add_wsi_to_processing_queue(data):
     if len(existing_annots) > 0:
         latest_annot = existing_annots[-1]
         latest_annot.update(store_data)
-        response = api.put(f"applications/{data['applicationId']}/results/{latest_annot['id']}", json=latest_annot)
+        response = api.put(
+            f"applications/{data['applicationId']}/results/{latest_annot['id']}",
+            json=latest_annot,
+        )
     else:
-        response = api.post(f"applications/{data['applicationId']}/results/", json=store_data)
+        response = api.post(
+            f"applications/{data['applicationId']}/results/", json=store_data
+        )
     response.raise_for_status()
     # the response we get back is in a suitable format for passing back to the caller
     return json_resp(response.json())

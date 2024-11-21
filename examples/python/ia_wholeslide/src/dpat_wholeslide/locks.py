@@ -6,7 +6,8 @@ import os
 import time
 import fcntl
 
-def lock_acquire(lock_file, timeout = 5.0):
+
+def lock_acquire(lock_file, timeout=5.0):
     start_time = current_time = time.time()
     while current_time < start_time + timeout:
         lock_file_fd = lock_try_acquire(lock_file)
@@ -14,6 +15,7 @@ def lock_acquire(lock_file, timeout = 5.0):
             return lock_file_fd
         time.sleep(0.5)
         current_time = time.time()
+
 
 def lock_try_acquire(lock_file):
     open_mode = os.O_RDWR | os.O_CREAT | os.O_TRUNC

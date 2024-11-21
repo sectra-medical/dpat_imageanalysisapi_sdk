@@ -9,6 +9,7 @@ Modified from https://wiki.python.org/moin/PointsAndRectangles and indicated to 
 
 import math
 
+
 class Point:
     """A point identified by (x,y) coordinates.
 
@@ -31,19 +32,19 @@ class Point:
 
     def __add__(self, p):
         """Point(x1+x2, y1+y2)"""
-        return Point(self.x+p.x, self.y+p.y)
+        return Point(self.x + p.x, self.y + p.y)
 
     def __sub__(self, p):
         """Point(x1-x2, y1-y2)"""
-        return Point(self.x-p.x, self.y-p.y)
+        return Point(self.x - p.x, self.y - p.y)
 
-    def __mul__( self, scalar ):
+    def __mul__(self, scalar):
         """Point(x1*x2, y1*y2)"""
-        return Point(self.x*scalar, self.y*scalar)
+        return Point(self.x * scalar, self.y * scalar)
 
     def __truediv__(self, scalar):
         """Point(x1/x2, y1/y2)"""
-        return Point(self.x/scalar, self.y/scalar)
+        return Point(self.x / scalar, self.y / scalar)
 
     def __str__(self):
         return "(%s, %s)" % (self.x, self.y)
@@ -94,8 +95,8 @@ class Point:
         The new position is returned as a new Point.
         """
         s, c = [f(rad) for f in (math.sin, math.cos)]
-        x, y = (c*self.x - s*self.y, s*self.x + c*self.y)
-        return Point(x,y)
+        x, y = (c * self.x - s * self.y, s * self.x + c * self.y)
+        return Point(x, y)
 
     def rotate_about(self, p, theta):
         """Rotate counter-clockwise around a point, by theta degrees.
@@ -104,16 +105,16 @@ class Point:
 
         The new position is returned as a new Point.
         """
-        return ((self-p).rotate(theta))+p
+        return ((self - p).rotate(theta)) + p
 
     def clip(self, rect):
-      """ ensure Point is max_x or max_y """
-      x = max(min(self.x, rect.bottom_right.x), rect.top_left.x)
-      y = max(min(self.y, rect.bottom_right.y), rect.top_left.y)
-      return Point(x,y)
+        """ensure Point is max_x or max_y"""
+        x = max(min(self.x, rect.bottom_right.x), rect.top_left.x)
+        y = max(min(self.y, rect.bottom_right.y), rect.top_left.y)
+        return Point(x, y)
+
 
 class Rect:
-
     """A rectangle identified by two points.
 
     The rectangle stores left, top, right, and bottom values.
@@ -137,19 +138,19 @@ class Rect:
     def __init__(self, pt1, pt2):
         """Initialize a rectangle from two points."""
         if not isinstance(pt1, Point):
-          pt1 = Point(pt1[0], pt1[1])
+            pt1 = Point(pt1[0], pt1[1])
         if not isinstance(pt2, Point):
-          pt2 = Point(pt2[0], pt2[1])
+            pt2 = Point(pt2[0], pt2[1])
         self.set_points(pt1, pt2)
 
     @classmethod
     def from_bbox(cls, left, top, width, height):
-        """ initialize from a bounding box """
-        return cls((left, top), (left+width, top+height))
+        """initialize from a bounding box"""
+        return cls((left, top), (left + width, top + height))
 
     @classmethod
     def from_bounds(cls, minx, miny, maxx, maxy):
-        """ initialize from a bounds box (i.e, shapely)"""
+        """initialize from a bounds box (i.e, shapely)"""
         return cls((minx, miny), (maxx, maxy))
 
     @property
@@ -164,23 +165,23 @@ class Rect:
 
     @property
     def width(self):
-      return self.right - self.left
+        return self.right - self.left
 
     @property
     def height(self):
-      return self.bottom - self.top
+        return self.bottom - self.top
 
     def __add__(self, p):
-        return Rect(self.top_left+p, self.bottom_right+p)
+        return Rect(self.top_left + p, self.bottom_right + p)
 
     def __sub__(self, p):
-        return Rect(self.top_left-p, self.bottom_right-p)
+        return Rect(self.top_left - p, self.bottom_right - p)
 
-    def __mul__( self, scalar):
-        return Rect(self.top_left*scalar, self.bottom_right*scalar)
+    def __mul__(self, scalar):
+        return Rect(self.top_left * scalar, self.bottom_right * scalar)
 
     def __truediv__(self, scalar):
-        return Rect(self.top_left/scalar, self.bottom_right/scalar)
+        return Rect(self.top_left / scalar, self.bottom_right / scalar)
 
     def set_points(self, pt1, pt2):
         """Reset the rectangle coordinates."""
@@ -193,14 +194,17 @@ class Rect:
 
     def contains(self, pt):
         """Return true if a point is inside the rectangle."""
-        x,y = pt.as_tuple()
-        return (self.left <= x <= self.right and
-                self.top <= y <= self.bottom)
+        x, y = pt.as_tuple()
+        return self.left <= x <= self.right and self.top <= y <= self.bottom
 
     def overlaps(self, other):
         """Return true if a rectangle overlaps this rectangle."""
-        return (self.right > other.left and self.left < other.right and
-                self.top < other.bottom and self.bottom > other.top)
+        return (
+            self.right > other.left
+            and self.left < other.right
+            and self.top < other.bottom
+            and self.bottom > other.top
+        )
 
     def expanded_by(self, n):
         """Return a rectangle with extended borders.
@@ -208,12 +212,12 @@ class Rect:
         Create a new rectangle that is wider and taller than the
         immediate one. All sides are extended by "n" points.
         """
-        p1 = Point(self.left-n, self.top-n)
-        p2 = Point(self.right+n, self.bottom+n)
+        p1 = Point(self.left - n, self.top - n)
+        p2 = Point(self.right + n, self.bottom + n)
         return Rect(p1, p2)
 
     def map(self, fn):
-        """ transform rect by appling fn to all scalar values """
+        """transform rect by appling fn to all scalar values"""
         return Rect(self.top_left.map(fn), self.bottom_right.map(fn))
 
     def as_tuple(self):
@@ -226,19 +230,22 @@ class Rect:
         """Return a full copy of this Rect."""
         return Rect(self.top_left, self.bottom_right)
 
-    def __str__( self ):
-        return "<Rect (%s,%s)-(%s,%s)>" % (self.left,self.top,
-                                           self.right,self.bottom)
+    def __str__(self):
+        return "<Rect (%s,%s)-(%s,%s)>" % (self.left, self.top, self.right, self.bottom)
+
     def __repr__(self):
-        return "%s(%r, %r)" % (self.__class__.__name__,
-                               Point(self.left, self.top),
-                               Point(self.right, self.bottom))
+        return "%s(%r, %r)" % (
+            self.__class__.__name__,
+            Point(self.left, self.top),
+            Point(self.right, self.bottom),
+        )
+
 
 # %%
 
 if __name__ == "__main__":
-  p = Point(5, 2)
-  print(p.as_tuple())
+    p = Point(5, 2)
+    print(p.as_tuple())
 
-  b = Rect((10,10), (40,40))
-  print(b.as_bbox())
+    b = Rect((10, 10), (40, 40))
+    print(b.as_bbox())
