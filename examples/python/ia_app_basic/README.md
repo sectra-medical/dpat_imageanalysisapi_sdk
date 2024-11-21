@@ -13,6 +13,11 @@ For a more realistic implementation where WSI processing is done in longer-runni
 
 - Output: a graphical primitive, or a "patch gallery" (see `webserver.py:DEMO_TYPE` and `webserver.py:app_on_userinput` )
 
+**Screenshot**
+
+![pcad_demo_2024-11-21_15-48-thumbnail](https://github.com/user-attachments/assets/51c2d8d6-a549-411a-bc56-38d866e80d60)
+
+
 ### Development notes
 Uses a simple flask server for responding to IA-API requests and a requests-based client for outgoing communications with the IA-API..
 
