@@ -1,26 +1,47 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 dzidesc -- module for common computations done on DeepZoomImage images
 
 
 DziDescription              <--- represents an entire zoomable image
   |
-  |                           there are fixed steps of zooms that can be retrieved
-  |                           these are named levels
+  |                           there are fixed steps of zooms that can be retrieved, named levels
   |
-  +---- DziLevel              <-- the base (the largest) level is 0, and higher numbers mean smaller images
+  |
+  +---- DziLevel              <-- the baselevel is the largest and decreasing numbers mean smaller images.
         |
         |
         |
         +--- DziTile          <-- each level consists of columns * rows tiles that are each maximum
                                   (patch_size, patch_size), but might be smaller at the edges of the image.
 
+Example Usage:
+
+    d = DziDescription(87647, 76723, 240)
+    for level in d.levels():
+        print(level)
+
+Outputs:
+    <DziDescription width:87647 height:76723 tile_size:240 overlap:0 baselevel:17 />
+
+    <DziLevel level:2 cols(x):1 rows(y):1 width,height:(2, 2) />
+    <DziLevel level:3 cols(x):1 rows(y):1 width,height:(5, 4) />
+    <DziLevel level:4 cols(x):1 rows(y):1 width,height:(10, 9) />
+    <DziLevel level:5 cols(x):1 rows(y):1 width,height:(21, 18) />
+    <DziLevel level:6 cols(x):1 rows(y):1 width,height:(42, 37) />
+    <DziLevel level:7 cols(x):1 rows(y):1 width,height:(85, 74) />
+    <DziLevel level:8 cols(x):1 rows(y):1 width,height:(171, 149) />
+    <DziLevel level:9 cols(x):2 rows(y):2 width,height:(342, 299) />
+    <DziLevel level:10 cols(x):3 rows(y):3 width,height:(684, 599) />
+    <DziLevel level:11 cols(x):6 rows(y):5 width,height:(1369, 1198) />
+    <DziLevel level:12 cols(x):12 rows(y):10 width,height:(2738, 2397) />
+    <DziLevel level:13 cols(x):23 rows(y):20 width,height:(5477, 4795) />
+    <DziLevel level:14 cols(x):46 rows(y):40 width,height:(10955, 9590) />
+    <DziLevel level:15 cols(x):92 rows(y):80 width,height:(21911, 19180) />
+    <DziLevel level:16 cols(x):183 rows(y):160 width,height:(43823, 38361) />
+    <DziLevel level:17 cols(x):366 rows(y):320 width,height:(87647, 76723) />
 """
 
 import collections
-import logging as log
 import math
 from typing import List, Generator, Tuple
 
@@ -47,8 +68,8 @@ class DziDescription:
   Utility class for DeepZoomImage calculations
   """
   def __init__(self, base_width: int, base_height: int, tile_size: int,
-               tile_overlap: int = 0, magnification: float = None,
-               resolution: float = None):
+               tile_overlap: int = 0, magnification: float | None = None,
+               resolution: float | None = None):
     self.width = base_width
     self.height = base_height
     self.tile_size = tile_size
@@ -144,13 +165,13 @@ class DziLevel(object):
     """ total number of tiles in level """
     return self.cols() * self.rows()
 
-  def magnification(self) -> int:
+  def magnification(self) -> float | None:
     """ get the magnification of this level, i.e 20.0 for 20X etc. """
     if self.parent.magnification is None:
       return None
     return self.parent.magnification * self.level_scale()
 
-  def resolution(self) -> int:
+  def resolution(self) -> float | None:
     """ get the resolution of this level in microns per pixel """
     if self.parent.resolution is None:
       return None
@@ -193,8 +214,6 @@ class DziLevel(object):
 
     x,y = top left position of bbox, absolute pixels
     """
-    n_rows = self.rows()
-    n_cols = self.cols()
     tiles = self.tiles_within(x,y,width,height)
     for tile in tiles:
       place_origin = Point(tile.col * self.parent.tile_size, tile.row * self.parent.tile_size)
@@ -259,28 +278,12 @@ class DziTile:
   def to_path(self):
     return "{0}/{1}_{2}".format(self.level, self.col, self.row)
 
-def dzi_fromfile(dzi_path):
-  """ read dzi description from dzi xml file """
-  import xmltodict
-  from pathlib import Path
-  xmlstr = Path(dzi_path).read_text()
-  xml = xmltodict.parse(xmlstr)
-  width = int(xml['Image']['Size']['@Width'])
-  height = int(xml['Image']['Size']['@Height'])
-  tz = int(xml['Image']['@TileSize'])
-  toverlap = int(xml['Image']['@Overlap'])
-  dzi = DziDescription(width, height, tz, toverlap)
-  dzi.format = xml['Image']['@Format']
-  dzi.magnification = int(xml['Image']['@Magnification'])
-  dzi.resolution = float(xml['Image']['@Resolution'])
-  return dzi
-
 if __name__ == "__main__":
   # Example Usage:
 
   # list levels and tiles
   d = DziDescription(87647, 76723, 240)
-  d.tile_overlap = 1
+  #d.tile_overlap = 0
   print(d)
 
   # %%

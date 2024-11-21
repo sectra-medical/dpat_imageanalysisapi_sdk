@@ -1,21 +1,17 @@
-import os
 import json
 import traceback
 import hashlib
 
 from datetime import datetime
-from functools import reduce, partial
 from pathlib import Path
 
-import requests
 from flask import Flask, request, jsonify
 
 from dpat_wholeslide.version import (
     __version__,
     SECTRA_IA_API_MIN_VERSION,
-    SECTRA_IA_API_MAX_VERSION,
 )
-from dpat_wholeslide.utils import requests_session_from_callbackinfo, dig
+from dpat_wholeslide.utils import requests_session_from_callbackinfo
 
 app = Flask(__name__)
 
@@ -156,7 +152,7 @@ def app_add_wsi_to_processing_queue(data):
     data_folder = Path(f"./data/requests/{case_name}/{block_name}-{stain_name}-{stable_slide_id}")
     data_folder.mkdir(parents=True, exist_ok=True)
 
-    metadata_filename = data_folder/f"metadata.json"
+    metadata_filename = data_folder/"metadata.json"
     with open(metadata_filename, 'w') as file:
         json.dump(metadata, file)
 
@@ -166,7 +162,7 @@ def app_add_wsi_to_processing_queue(data):
 
     # also write a file in a flat queue folder, this folder will represent
     # the "active" queue and the data folder can be a larger repository of all requests
-    queue_folder = Path(f"./data/queue")
+    queue_folder = Path("./data/queue")
     queue_folder.mkdir(parents=True, exist_ok=True)
     slide_queue_file = queue_folder/f"{case_name}-{block_name}-{stain_name}-{stable_slide_id}.txt"
     slide_queue_file.write_text(f"../../{save_filename}\n") # persist a "link" to the most recent metadata

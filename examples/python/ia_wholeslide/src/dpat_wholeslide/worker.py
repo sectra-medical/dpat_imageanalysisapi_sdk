@@ -4,7 +4,6 @@ import os
 import json
 import sys
 
-from functools import reduce, partial
 from pathlib import Path
 import time
 
@@ -12,14 +11,15 @@ import PIL # pip install pillow
 import PIL.Image
 
 import click
-from click import echo, style, secho
+from click import secho
 from requests_toolbelt import MultipartDecoder
 from tqdm import tqdm
 
-from dpat_wholeslide.dzidesc import DziDescription
-from dpat_wholeslide.utils import dig, lock_release, lock_try_acquire, requests_session_from_callbackinfo
-
 from dpat_wholeslide.version import (__version__)
+from dpat_wholeslide.dzidesc import DziDescription
+from dpat_wholeslide.utils import requests_session_from_callbackinfo
+from dpat_wholeslide.locks import lock_release, lock_try_acquire
+
 
 # %%
 
@@ -78,7 +78,7 @@ def download_thumbnail(folder_path):
     # - locate latest request_user file
     api, req = session_from_folder(folder_path)
 
-    # request image metadata    
+    # request image metadata
     # we re-download metadata even though its in theory persisted in req already
     # (for clarity)
     slide_id = req['slideId']
@@ -86,7 +86,7 @@ def download_thumbnail(folder_path):
     # DziDescription is a helper class to manage Deep Zoom Image (DZI) pyramid logic,
     # useful when requesting tiles from the Sectra DPAT IA-API.
     dzi = DziDescription(metadata['imageSize']['width'],
-                         metadata['imageSize']['height'], 
+                         metadata['imageSize']['height'],
                          tile_size=metadata['tileSize']['width'],
                          tile_overlap=0,
                          resolution=metadata['micronsPerPixel'])
@@ -106,12 +106,12 @@ def download_thumbnail(folder_path):
     dst_filepath = folder_path / "thumbnail.jpg"
     dst_img.save(dst_filepath)
     secho(f"wrote thumbnail to '{dst_filepath}'")
-    
-    # - download slide label image (NOTE: might contain PHI!)    
+
+    # - download slide label image (NOTE: might contain PHI!)
     r = api.get(f"slides/{slide_id}/label")
     r.raise_for_status()
     if r.status_code == 204:
-        secho("no label image stored for this slide")        
+        secho("no label image stored for this slide")
     else:
         img = io.BytesIO(r.content)
         img_pil = PIL.Image.open(img).convert('RGB')
@@ -160,8 +160,8 @@ def set_progress(api, req, text, progress_percent):
     r = api.get(f"slides/{req['slideId']}/info?scope=extended&includePHI=false")
     r.raise_for_status()
     metadata = r.json()
-    max_y = metadata["imageSize"]["height"] / metadata["imageSize"]["width"]    
-    
+    max_y = metadata["imageSize"]["height"] / metadata["imageSize"]["width"]
+
     store_data = {
         "slideId": req["slideId"],
         "displayResult": new_text,  # text as shown in the annotation list (L)
@@ -188,7 +188,7 @@ def set_progress(api, req, text, progress_percent):
 
     # check if there is already an app result from our app for this slide
     r = api.get(f"applications/{req['applicationId']}/results/slide/{req['slideId']}")
-    r.raise_for_status()    
+    r.raise_for_status()
     existing_annots = r.json()
     if len(existing_annots) > 0:
         latest_annot = existing_annots[-1]
@@ -209,7 +209,7 @@ def set_progress(api, req, text, progress_percent):
 def cli_download_wsi(folder):
     """
     Download the WSI file(s) for the given slide and persist in the folder below 'wsi_files'.
-    """    
+    """
     return download_wsi(folder)
 
 def download_wsi(folder):
@@ -218,7 +218,7 @@ def download_wsi(folder):
     api, req = session_from_folder(folder_path)
     slide_id = req['slideId']
 
-    secho(f"downloading WSI for '{folder_path}'")    
+    secho(f"downloading WSI for '{folder_path}'")
     r = api.get(f"slides/{slide_id}/files", stream=True)
 
     # TODO: the MultipartDecoder in requests-toolbelt reads the entire r.content
@@ -295,7 +295,7 @@ def cli_watch(queue_folder):
                 if not thumbnail_path.exists():
                     download_thumbnail(req_file.parent)
                 set_progress(api, req, None, 20)
-                
+
                 # - download WSI
                 wsi_folder_path = req_file.parent / "wsi_files"
                 if len(list(wsi_folder_path.glob("*"))) == 0:
@@ -310,7 +310,7 @@ def cli_watch(queue_folder):
                 set_progress(api, req, None, 80)
                 time.sleep(2)
                 set_progress(api, req, None, 100)
-                
+
                 # - save final result
                 metadata = api.get(f"slides/{req['slideId']}/info?scope=extended&includePHI=false").json()
                 max_y = metadata["imageSize"]["height"] / metadata["imageSize"]["width"]
@@ -337,21 +337,21 @@ def cli_watch(queue_folder):
                     },
                 }
 
-                
+
                 # check for existing result
                 r = api.get(f"applications/{req['applicationId']}/results/slide/{req['slideId']}")
-                existing_annots = r.json()            
+                existing_annots = r.json()
                 if len(existing_annots) > 0:
                     # update existing resulti nstead
                     latest_annot = existing_annots[-1]
                     latest_annot.update(store_data)
                     response = api.put(f"applications/{req['applicationId']}/results/{latest_annot['id']}", json=latest_annot)
-                else:                                           
+                else:
                     response = api.post(f"applications/{req['applicationId']}/results/", json=store_data)
                 response.raise_for_status()
                 secho("saved final result. done")
                 # - remove queue file
-                queue_file.unlink()                                
+                queue_file.unlink()
             finally:
                 lock_release(queue_lock)
             # break the loop - we want to re-read the directory listing since

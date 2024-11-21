@@ -3,10 +3,11 @@ Basic geometry classes
 
 Point   -- point with (x,y) coordinates
 Rect    -- two points, defining a rectangle
+
+Modified from https://wiki.python.org/moin/PointsAndRectangles and indicated to be in the Public Domain.
 """
 
 import math
-from typing import List, Optional, Sequence, Union, Set
 
 class Point:
     """A point identified by (x,y) coordinates.
@@ -237,9 +238,7 @@ class Rect:
 
 if __name__ == "__main__":
   p = Point(5, 2)
-  p.bounds
+  print(p.as_tuple())
 
   b = Rect((10,10), (40,40))
-  b.as_bbox()
-
-  list(p.coords)
+  print(b.as_bbox())
