@@ -22,34 +22,21 @@ This document outlines how we suggest you try the examples to get started using 
 
 ## 1. Starting the most basic app
 
-See the README in `./ia_app_basic` for more detailed instructions, TLDR:
+The basic app is a very minimal example to demonstrate how the user might interact with your app and the different result types available.
+
+See the README in [ia_app_basic](https://github.com/sectra-medical/dpat_imageanalysisapi_sdk/blob/main/examples/python/ia_app_basic/README.md) for more detailed instructions, TLDR:
 
 ```
 cd examples/python/ia_app_basic
 ./flask_run.sh
 ```
 
-This starts a webserver listening on 0.0.0.0:5005 (all ips, port 5005) on the machine you started it on.
+See the README linked above for how to configure the Sectra DPAT module to connect. 
 
-Next, you will need to register this with the Sectra PACS DPAT Server. For more detailed instructions, refer to Chapter 7 in the *System Administrator Manual*.
+Once you have succesfully got this basic app working inside the Sectra Pathology module, we strongly suggest you proceed with adopting the practices in the second example below.
 
-- Go to https://<pathologyserver>/sectrapathologyimport/config
-  - log in, click Image Analysis Applications
-  - Under Server Side Applications, click 'register new'
-  - Enter the URL where your started web server (this repository) is running, as reachable from the pathology server.
-    - Example: `http://my-ia-app-server:5001/iademo`
-    - NOTE! Ensuring connectivity can take some work in most hospital environments.
-  - Press 'Retrieve registration Info'
-  - The fields should be populated, press *Save*
-  - Per default, the app is disabled. Click the 'disabled' button to toggle it to enabled.
+## 2. Realistic example - background processing
+Since WSI are huge, they take time processing. This means you will need to answer the user request quickly and then submit the slide for background processing.
 
-If succesful, you should now be able to right-click in any Pathology Image and select your new IA-APP (you might need to refresh any running sessions).
-
-TODO: screenshot here of succesful operation
-TODO: screenshot of configuration UI
-
-## 2. A more realistic example
-
-TODO: Writeme
-
+After getting familiar with the basic app, see [ia_wholeslide](https://github.com/sectra-medical/dpat_imageanalysisapi_sdk/blob/main/examples/python/ia_wholeslide/README.md) for a more realistic example.
 
