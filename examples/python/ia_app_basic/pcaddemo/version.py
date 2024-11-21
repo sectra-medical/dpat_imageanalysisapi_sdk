@@ -1,6 +1,7 @@
 """
 version info
 """
+
 __version__ = "0.1.0"
 
 # this is the minimum version we require, we do not support
