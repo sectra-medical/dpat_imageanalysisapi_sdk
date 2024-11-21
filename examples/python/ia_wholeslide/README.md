@@ -44,7 +44,7 @@ move the queue directory to a fileshare so that multiple machines can spawn work
 
 In order to try this out you'll need to
 
-1. Get the server within this folder running (see Install and Run)
+1. Get the server and worker within this folder running (see Install and Run)
 2. Configure Sectra DPAT adding the URL of the server to the list of configured IA-Apps (see Configuring the Sectra DPAT Server)
 
 ### Install and run
@@ -90,6 +90,50 @@ You need to configure the Sectra Pathology Server (SPS) to call this server. Thi
   - Per default, the app is disabled. Click the 'disabled' button to toggle it to enabled.
 
 If succesful, you should now be able to right-click in any Pathology Image and select your new IA-APP (you might need to refresh any running sessions).
+
+### Development and Testing
+
+You can manually (re)-process a single slide using the worker CLI.
+
+```
+$ python ./src/dpat_wholeslide/worker.py --help
+
+Usage: worker.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  process  process single slide
+  watch    start monitoring for WSI processing requests
+```
+
+Actually, the `worker_run.sh` script mentioned above just calls the `watch` subcommand of the worker cli.
+
+The `webserver.py` process will create "slide folders" within `./data/requests` when a user calls the app. The watch process
+monitors the folder for such files and automatically processes them. However, you can also run manually using the same info,
+which is useful while you are developing your analysis code.
+
+Example:
+  - Only start the webserver, do not start any workers
+  - Go to a slide and trigger your configured app
+  - Note that a folder has been created below `./data/requests`, e.g. `./data/requests/AI-DRBR-290/A-HE-9adf3d8c20`
+  - Now trigger processing on this folder:
+    - Execute `uv run -- python ./src/dpat_wholeslide/worker.py ./data/requests/AI-DRBR-290/A-HE-9adf3d8c20`
+  - Investigate the slide folder now and you'll note that it has the following files
+    - `metadata.json` -- persisted metadata about the slide being processed
+    - `thumbnail.jpg` -- a thumbnail of the slide
+    - `label.jpg` -- the slide label image (if available, not all WSI have them)
+    - a folder `wsi_files/` -- containing the entire WSI
+
+## Changes needed to use in production
+
+This example code is intended to get you started. Hence it avoids a few things you would need to do when using it for production
+
+We suggest you at least:
+
+- Ensure you scale webserver workers using a WSGI runner like gunicorn
+- Ensure you clean up WSI files and metadata after some suitable period in your worker watch loop
 
 ## Tested with
 

@@ -30,7 +30,7 @@ from dpat_wholeslide.locks import lock_release, lock_try_acquire
 
 def latest_request_data(folder_path):
     """
-    Given a folder path, locate the latest request data file and return its contents as a dict.
+    Given a slide folder path, locate the latest request data file and return its contents as a dict.
     """
     latest_file = sorted(folder_path.glob("request*.json"))
     if not latest_file:
@@ -41,42 +41,23 @@ def latest_request_data(folder_path):
 
 def session_from_folder(folder_path):
     """
-    Given a folder path, locate the latest request data file and return a requests Session
+    Given a slide folder path, locate the latest request data file and return a requests Session
     together with the request data.
     """
     req = latest_request_data(folder_path)
     if not req:
-        return None, None
+        raise Exception(f"no user request-json found in '{folder_path}'")
     api = requests_session_from_callbackinfo(req["callbackInfo"])
     return api, req
 
 
-# --------------------------------------------
-# CLI Commands
-# --------------------------------------------
-
-
-@click.group()
-def main():
-    pass
-
-
-# ============================================
-# Download Thumbnail
-# ============================================
-@main.command(name="thumbnail", help="download slide thumbnail")
-@click.argument("folder")
-def cli_download_thumbnail(folder):
+def download_thumbnail(folder_path):
     """
-    Download a thumbnail for the given slide and persist in the folder as 'thumbnail.jpg'.
+    Download a thumbnail for the given slide and persist in the slide folder as 'thumbnail.jpg'.
 
     Examplifies using the tile-based (Deep Zoom Image (DZI) pyramid) API calls.
     """
-    folder_path = Path(folder)
-    return download_thumbnail(folder_path)
-
-
-def download_thumbnail(folder_path):
+    folder_path = Path(folder_path)
     secho(f"downloading thumbnail for '{folder_path}'")
     # - locate latest request_user file
     api, req = session_from_folder(folder_path)
@@ -145,46 +126,11 @@ def download_thumbnail(folder_path):
     secho("done")
 
 
-# ============================================
-# Set Progress Percentage
-# ============================================
-
-
-@main.command(
-    help="update progress text for a given FOLDER (e.g. 'data/queue/my-request/my-slide')"
-)
-@click.option(
-    "--text",
-    help="Explicit text to set as label, use '{}' to insert percentage.",
-    required=False,
-    default="analysis, progress {} %",
-)
-@click.argument("folder")
-@click.argument("percent")
-def progress(folder, text, percent):
-    """
-    Update the progress text for the latest result (annotation) in the given slide folder.
-
-    if text is None, will default to "analysis, progress {} %" where {} is replaced by the percentage.
-    """
-    # parse inputs
-    folder_path = Path(folder)
-    if not folder_path.exists():
-        secho(
-            f"Error: invalid folder path '{folder}' -- the path does not exist.",
-            fg="red",
-        )
-        sys.exit(1)
-    secho(f"updating progress text for '{folder_path}'")
-    # - locate latest request_user file
-    api, req = session_from_folder(folder_path)
-    set_progress(api, req, text, percent)
-    secho("done")
-
-
 def set_progress(api, req, text, progress_percent):
     """
     Update the progress text for the latest result (annotation) of the slide described in req.
+
+    if text is None, will use a template like "analysis, progress {} %"
     """
     new_text = text
     if not new_text:
@@ -257,19 +203,10 @@ def set_progress(api, req, text, progress_percent):
     response.raise_for_status()
 
 
-# ============================================
-# Download WSI files
-# ============================================
-@main.command(name="wsi", help="download WSI")
-@click.argument("folder")
-def cli_download_wsi(folder):
-    """
-    Download the WSI file(s) for the given slide and persist in the folder below 'wsi_files'.
-    """
-    return download_wsi(folder)
-
-
 def download_wsi(folder):
+    """
+    Download the WSI and persist in ./wsi_files/ beneath the slide folder.
+    """
     folder_path = Path(folder)
     # - locate latest request_user file
     api, req = session_from_folder(folder_path)
@@ -325,6 +262,118 @@ def download_wsi(folder):
             print(f"file already exists: '{dest_path}'")
 
 
+def process_single(folder):
+    folder_path = Path(folder)
+    # - locate latest request_user file
+    api, req = session_from_folder(folder_path)
+    set_progress(api, req, None, 10)
+
+    # download thumbnail
+    thumbnail_path = folder_path / "thumbnail.jpg"
+    if not thumbnail_path.exists():
+        download_thumbnail(folder_path)
+    set_progress(api, req, None, 20)
+
+    # - download WSI
+    wsi_folder_path = folder_path / "wsi_files"
+    if len(list(wsi_folder_path.glob("*"))) == 0:
+        download_wsi(folder_path)
+    set_progress(api, req, None, 40)
+
+    # calculate something complicated
+    secho("doing some complicated analysis")
+    time.sleep(2)
+    set_progress(api, req, None, 60)
+    time.sleep(2)
+    set_progress(api, req, None, 80)
+    time.sleep(2)
+    set_progress(api, req, None, 100)
+
+    # - save final result
+    metadata = api.get(
+        f"slides/{req['slideId']}/info?scope=extended&includePHI=false"
+    ).json()
+    max_y = metadata["imageSize"]["height"] / metadata["imageSize"]["width"]
+    text = "ANSWER: 42"
+
+    store_data = {
+        "slideId": req["slideId"],
+        "displayResult": text,  # text as shown in the annotation list (L)
+        "displayProperties": {},
+        "applicationVersion": __version__,
+        "data": {
+            "context": {},
+            "result": {
+                "type": "primitive",
+                "content": {
+                    "style": {
+                        "fillStyle": None,
+                        "size": None,
+                        "strokeStyle": "#FFA500",
+                    },
+                    "polygons": [
+                        {
+                            "points": [
+                                {"x": 1 * (1.0 / 3), "y": 1 * (max_y / 3)},
+                                {"x": 2 * (1.0 / 3), "y": 1 * (max_y / 3)},
+                                {"x": 2 * (1.0 / 3), "y": 2 * (max_y / 3)},
+                                {"x": 1 * (1.0 / 3), "y": 2 * (max_y / 3)},
+                            ]
+                        }
+                    ],
+                    "labels": [
+                        # place label at the center
+                        {
+                            "location": {"x": 0.5, "y": max_y / 2.0},
+                            "label": text,
+                        }
+                    ],
+                },
+            },
+        },
+    }
+
+    # check for existing result
+    r = api.get(f"applications/{req['applicationId']}/results/slide/{req['slideId']}")
+    existing_annots = r.json()
+    if len(existing_annots) > 0:
+        # update existing resulti nstead
+        latest_annot = existing_annots[-1]
+        latest_annot.update(store_data)
+        response = api.put(
+            f"applications/{req['applicationId']}/results/{latest_annot['id']}",
+            json=latest_annot,
+        )
+    else:
+        response = api.post(
+            f"applications/{req['applicationId']}/results/", json=store_data
+        )
+    response.raise_for_status()
+    secho("saved final result. done")
+
+
+# --------------------------------------------
+# CLI Commands
+# --------------------------------------------
+
+
+@click.group()
+def main():
+    pass
+
+
+# ============================================
+# Process single case
+# ============================================
+@main.command(name="process", help="process single slide")
+@click.argument("slide_folder")
+def cli_process_single(slide_folder):
+    """
+    Process a single slide. Processing will download thumbnail, WSI and compute a result.
+    """
+    return process_single(slide_folder)
+
+
 # ============================================
 # watch -- e.g. act as Queue Controller
 # ============================================
@@ -353,94 +402,9 @@ def cli_watch(queue_folder):
                 # read the file and extract the path to the request file
                 req_file_relpath = Path(queue_file.read_text().strip())
                 req_file = queue_file.parent / req_file_relpath
-                req = json.loads(req_file.read_text())
-                api = requests_session_from_callbackinfo(req["callbackInfo"])
-                set_progress(api, req, None, 10)
 
-                # download thumbnail
-                thumbnail_path = req_file.parent / "thumbnail.jpg"
-                if not thumbnail_path.exists():
-                    download_thumbnail(req_file.parent)
-                set_progress(api, req, None, 20)
+                process_single(req_file.parent)
 
-                # - download WSI
-                wsi_folder_path = req_file.parent / "wsi_files"
-                if len(list(wsi_folder_path.glob("*"))) == 0:
-                    download_wsi(req_file.parent)
-                set_progress(api, req, None, 40)
-
-                # calculate something complicated
-                secho("doing some complicated analysis")
-                time.sleep(2)
-                set_progress(api, req, None, 60)
-                time.sleep(2)
-                set_progress(api, req, None, 80)
-                time.sleep(2)
-                set_progress(api, req, None, 100)
-
-                # - save final result
-                metadata = api.get(
-                    f"slides/{req['slideId']}/info?scope=extended&includePHI=false"
-                ).json()
-                max_y = metadata["imageSize"]["height"] / metadata["imageSize"]["width"]
-                text = "ANSWER: 42"
-
-                store_data = {
-                    "slideId": req["slideId"],
-                    "displayResult": text,  # text as shown in the annotation list (L)
-                    "displayProperties": {},
-                    "applicationVersion": __version__,
-                    "data": {
-                        "context": {},
-                        "result": {
-                            "type": "primitive",
-                            "content": {
-                                "style": {
-                                    "fillStyle": None,
-                                    "size": None,
-                                    "strokeStyle": "#FFA500",
-                                },
-                                "polygons": [
-                                    {
-                                        "points": [
-                                            {"x": 1 * (1.0 / 3), "y": 1 * (max_y / 3)},
-                                            {"x": 2 * (1.0 / 3), "y": 1 * (max_y / 3)},
-                                            {"x": 2 * (1.0 / 3), "y": 2 * (max_y / 3)},
-                                            {"x": 1 * (1.0 / 3), "y": 2 * (max_y / 3)},
-                                        ]
-                                    }
-                                ],
-                                "labels": [
-                                    # place label at the center
-                                    {
-                                        "location": {"x": 0.5, "y": max_y / 2.0},
-                                        "label": text,
-                                    }
-                                ],
-                            },
-                        },
-                    },
-                }
-
-                # check for existing result
-                r = api.get(
-                    f"applications/{req['applicationId']}/results/slide/{req['slideId']}"
-                )
-                existing_annots = r.json()
-                if len(existing_annots) > 0:
-                    # update existing resulti nstead
-                    latest_annot = existing_annots[-1]
-                    latest_annot.update(store_data)
-                    response = api.put(
-                        f"applications/{req['applicationId']}/results/{latest_annot['id']}",
-                        json=latest_annot,
-                    )
-                else:
-                    response = api.post(
-                        f"applications/{req['applicationId']}/results/", json=store_data
-                    )
-                response.raise_for_status()
-                secho("saved final result. done")
                 # - remove queue file
                 queue_file.unlink()
             finally:
