@@ -65,7 +65,8 @@ You need to configure the Sectra Pathology Server (SPS) to call this server. Thi
 If succesful, you should now be able to right-click in any Pathology Image and select your new IA-APP (you might need to refresh any running sessions).
 
 **Screenshot of configuration where app is running on the same machine as the server**
-![image](https://github.com/user-attachments/assets/d3207da9-7b4e-47a7-ba2e-f27762785abe)
+
+![edit_thumbnail](https://github.com/user-attachments/assets/4e10cb17-c7d9-462a-bc2c-810fc916770e)
 
 
 
