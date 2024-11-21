@@ -5,6 +5,9 @@ Example of a fairly robust Sectra Image Analysis API (IA-API) implementation for
 
 The example consists of a `webserver.py` and workers started through `worker.py`
 
+![Screenshot of app](https://github.com/user-attachments/assets/643ee890-26de-4662-962a-8b5f32625431)
+
+
 ### Demo Application function
 The *webserver* implements the DPAT IA-API and will respond to user manually triggering analysis as well as automatic image notifications sent on image import.
 
