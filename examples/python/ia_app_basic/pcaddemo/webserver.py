@@ -19,6 +19,7 @@ APP_NAME = "ImageAnalysisDemo"
 APP_MANUFACTURER = "Sectra (demo)"
 BIND_PORT = 5005
 
+
 def json_resp(data):
     """serialize data to JSON and add appropriate IA-api headers"""
     resp = jsonify(data)
@@ -89,7 +90,7 @@ def app_on_userinput():
     data = request.get_json()
 
     save_filename = f"./debug/userinput_{data['action']}_tmp.json"
-    with open(save_filename, 'w') as file:
+    with open(save_filename, "w") as file:
         json.dump(data, file)
 
     # data['action'] :: create, modify, delete, cancel
@@ -138,9 +139,7 @@ def app_create_primitiveArea(data):
         "content": {
             "style": {"fillStyle": None, "size": None, "strokeStyle": "#FFA500"},
             "polygons": input_polygons,  # same area as user input,
-            "labels": [
-                {"location": min_y_pt, "label": text}
-            ],
+            "labels": [{"location": min_y_pt, "label": text}],
         },
     }
 

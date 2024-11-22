@@ -13,6 +13,11 @@ For a more realistic implementation where WSI processing is done in longer-runni
 
 - Output: a graphical primitive, or a "patch gallery" (see `webserver.py:DEMO_TYPE` and `webserver.py:app_on_userinput` )
 
+**Screenshot**
+
+![pcad_demo_2024-11-21_15-48-thumbnail](https://github.com/user-attachments/assets/51c2d8d6-a549-411a-bc56-38d866e80d60)
+
+
 ### Development notes
 Uses a simple flask server for responding to IA-API requests and a requests-based client for outgoing communications with the IA-API..
 
@@ -32,25 +37,18 @@ In order to try this out you'll need to
 ### Install and run
 
 #### Prerequisites
+We use astral `uv` for python dependency management. Please install it first. See https://docs.astral.sh/uv/ for more install options.
 
-You currently need libgeos to build shapely. On ubuntu `sudo apt install libgeos-dev`.
-The shapely dependency will eventually be removed.
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 #### Starting
 
-You can run this example in a virtualenv using poetry, or directly in the current python environment.
-
-Using poetry:
-```
-poetry install
-poetry run python pcaddemo/__main__.py
-```
-
-As plain-old python:
+Start the webserver:
 
 ```
-pip install -e .
-python pcaddemo/__main__.py
+./flask_run.sh
 ```
 
 ### Configuring the Sectra DPAT Server
@@ -70,6 +68,11 @@ You need to configure the Sectra Pathology Server (SPS) to call this server. Thi
   - Per default, the app is disabled. Click the 'disabled' button to toggle it to enabled.
 
 If succesful, you should now be able to right-click in any Pathology Image and select your new IA-APP (you might need to refresh any running sessions).
+
+**Screenshot of configuration where app is running on the same machine as the server**
+
+![edit_thumbnail](https://github.com/user-attachments/assets/4e10cb17-c7d9-462a-bc2c-810fc916770e)
+
 
 
 ## Tested with
