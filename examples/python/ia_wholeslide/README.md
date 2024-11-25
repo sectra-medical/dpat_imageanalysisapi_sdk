@@ -7,6 +7,7 @@ The example consists of a `webserver.py` and workers started through `worker.py`
 
 ![Screenshot of app](https://github.com/user-attachments/assets/643ee890-26de-4662-962a-8b5f32625431)
 
+Shreenshot showing the two app processes running and the in-progress message in Sectra PACS. The featured slide is from the AIDA-DRBR dataset, see https://doi.org/10.23698/aida/drbr - used with permission.
 
 ### Demo Application function
 The *webserver* implements the DPAT IA-API and will respond to user manually triggering analysis as well as automatic image notifications sent on image import.

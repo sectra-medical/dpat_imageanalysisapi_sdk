@@ -17,6 +17,7 @@ For a more realistic implementation where WSI processing is done in longer-runni
 
 ![pcad_demo_2024-11-21_15-48-thumbnail](https://github.com/user-attachments/assets/51c2d8d6-a549-411a-bc56-38d866e80d60)
 
+Screenshot shows an example patch gallery server side app in Sectra PACS. The featured slide is from the AIDA-DRBR dataset, see https://doi.org/10.23698/aida/drbr - used with permission.
 
 ### Development notes
 Uses a simple flask server for responding to IA-API requests and a requests-based client for outgoing communications with the IA-API..
