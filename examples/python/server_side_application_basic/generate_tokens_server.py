@@ -1,0 +1,74 @@
+from flask import Flask, request, jsonify
+import json
+import pandas as pd
+import requests
+
+IP = "<IP>"
+
+def download_info(callbackUrl, slideId, header):
+    """
+    Download slide information and returns a json of the response.
+    """
+    pull_info = requests.get(url=callbackUrl + "/slides/" + slideId+"/info?scope=extended&includePHI=true", verify=False, headers=header, stream=True)
+    return pull_info.json()
+
+token_file = "tokens.csv"
+
+
+app = Flask(__name__)
+
+@app.route('/get_token', methods=['GET'])
+def handle_get_token_get_request():
+    registration_response = jsonify({
+    "applicationId": "<applicationId>",
+    "displayName": "Get token",
+    "manufacturer": "HUG",
+    "url": "http://<IP>:5000/get_token",
+    "inputTemplate":{"type":"wholeSlide"}
+    })
+    return registration_response
+
+# should return info according to API documentation
+@app.route('/get_token/info', methods=['GET'])
+def handle_get_token_get_info_request():
+    info = jsonify({
+    "apiVersion": "1.7",
+    "softwareVersion": "1.0"
+    })
+    return info
+
+@app.route('/get_token', methods=['POST'])
+def handle_get_token_post_request():
+    data = request.json 
+    
+    slideId = data["slideId"]
+    token = data["callbackInfo"]["token"]
+    header = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+    url = data["callbackInfo"]["url"]
+    info = download_info(url, slideId, header)
+    slideName = info["lisSlideId"]
+    
+    try:
+        df = pd.read_csv(token_file)
+    except FileNotFoundError:
+        df = pd.DataFrame(columns=["slide_name",  "slide_id",
+                                   "url", "token"])
+
+    new_slide = pd.Series({
+    "slide_name": slideName,
+    "slide_id": slideId,
+    "url": url,
+    "token": token
+    })
+    
+    df = pd.concat([df, new_slide.to_frame().T], ignore_index=True)    
+
+    df.to_csv(token_file, index=False)
+
+    return '', 200
+
+if __name__ == '__main__':
+    app.run(host = IP)
+
+
+
