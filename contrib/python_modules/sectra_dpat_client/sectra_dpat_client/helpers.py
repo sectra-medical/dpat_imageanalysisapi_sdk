@@ -19,7 +19,7 @@ def connection_retry():
                 except ConnectionError:
                     delay = 2**trial
                     logger.warning(
-                        "IDS7 connection error trial %s/5, retrying in %ss",
+                        "DPAT connection error trial %s/5, retrying in %ss",
                         trial,
                         delay,
                     )

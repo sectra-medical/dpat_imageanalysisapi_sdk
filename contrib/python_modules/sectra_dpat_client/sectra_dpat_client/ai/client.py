@@ -3,37 +3,37 @@ from typing import Dict, Optional, cast
 
 import requests
 
-from ids7client.errors import IDS7RequestError
-from ids7client.helpers import JSONPayload, connection_retry
+from sectra_dpat_client.errors import DPATRequestError
+from sectra_dpat_client.helpers import JSONPayload, connection_retry
 
 from .schemas import ApplicationInfo, ImageInfo, Result, ResultResponse
 
 logger = logging.getLogger(__name__)
 
 
-class IDS7AIClient:
-    """Class managing connection and requests to IDS7 server AI API.
+class DPATAIClient:
+    """Class managing connection and requests to DPAT server AI API.
 
     Args:
-        url (str): URL of the IDS7 server
+        url (str): URL of the DPAT server
         token (str): Callback token
         app_id (str): Registered application id
 
     Attributes:
-        ids7_version (ApplicationInfo): Versions of the IDS7 server
+        dpat_version (ApplicationInfo): Versions of the DPAT server
     """
 
-    __slots__ = ("_url", "_token", "ids7_version", "_headers", "_app_id")
+    __slots__ = ("_url", "_token", "dpat_version", "_headers", "_app_id")
 
     def __init__(self, url: str, token: str, app_id: str) -> None:
         self._url = url
         self._token = token
         self._app_id = app_id
         self._headers = {"Authorization": f"Bearer {token}"}
-        self.ids7_version = self._retrieve_ids7_versions()
+        self.dpat_version = self._retrieve_dpat_versions()
 
-    def _retrieve_ids7_versions(self) -> ApplicationInfo:
-        """Retrieves the versions of IDS7 from the server."""
+    def _retrieve_dpat_versions(self) -> ApplicationInfo:
+        """Retrieves the versions of DPAT from the server."""
 
         versions = ApplicationInfo(**cast(dict, self._get("/info")))
         self._headers.update(
@@ -46,19 +46,19 @@ class IDS7AIClient:
 
     @connection_retry()
     def _get(self, path: str, **kwargs) -> JSONPayload:
-        """Runs a GET request to IDS7. Named args are query parameters."""
+        """Runs a GET request to DPAT. Named args are query parameters."""
 
         url = f"{self._url}{path}"
         resp = requests.get(url, params=kwargs, headers=self._headers)
         if resp.status_code != 200:
-            raise IDS7RequestError(resp.status_code, resp.text, path)
+            raise DPATRequestError(resp.status_code, resp.text, path)
         return resp.json()
 
     @connection_retry()
     def _post(
         self, path: str, payload: JSONPayload, parse_response: bool = True
     ) -> Optional[JSONPayload]:
-        """Runs a POST request to IDS7.
+        """Runs a POST request to DPAT.
 
         Args:
             path (str): Request path
@@ -72,7 +72,7 @@ class IDS7AIClient:
         url = f"{self._url}{path}"
         resp = requests.post(url, json=payload, headers=self._headers)
         if resp.status_code != 201:
-            raise IDS7RequestError(resp.status_code, resp.text, path)
+            raise DPATRequestError(resp.status_code, resp.text, path)
         if parse_response:
             return resp.json()
         return None
@@ -81,7 +81,7 @@ class IDS7AIClient:
     def _put(
         self, path: str, values: JSONPayload, parse_response: bool = True
     ) -> Optional[JSONPayload]:
-        """Runs a PUT request to IDS7.
+        """Runs a PUT request to DPAT.
 
         Args:
             path (str): Request path
@@ -95,7 +95,7 @@ class IDS7AIClient:
         url = f"{self._url}{path}"
         resp = requests.put(url, json=values, headers=self._headers)
         if resp.status_code != 200:
-            raise IDS7RequestError(resp.status_code, resp.text, path)
+            raise DPATRequestError(resp.status_code, resp.text, path)
         if parse_response:
             return resp.json()
         return None
@@ -124,13 +124,13 @@ class IDS7AIClient:
         return ImageInfo(**cast(dict, self._get(path, **params)))
 
     def create_results(self, results: Result) -> ResultResponse:
-        """Creates a result in IDS7.
+        """Creates a result in DPAT.
 
         Args:
             results (Result): Results payload
 
         Returns:
-            ResultResponse: Parsed IDS7 response.
+            ResultResponse: Parsed DPAT response.
         """
         path = f"/applications/{self._app_id}/results"
         resp = self._post(path, results.model_dump())

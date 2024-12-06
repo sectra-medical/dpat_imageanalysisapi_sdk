@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 @unique
 class DicomCodes(str, Enum):
-    """Enum for IDS7 dicom codes."""
+    """Enum for DPAT dicom codes."""
 
     PATIENT_ID = "00100020"
     EXAM_ID = "00200010"

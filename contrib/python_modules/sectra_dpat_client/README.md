@@ -1,8 +1,8 @@
-# Python Client for Sectra IDS7 PACS
+# Python Client for Sectra DPAT PACS
 
 ## Introduction
 
-This python package aims to facilite the development of AI applications integrated in Sectra IDS7 PACS.
+This python package aims to facilite the development of AI applications integrated in Sectra DPAT PACS.
 
 Please note that for now, not every feature is implemented but the package can easily be enriched:
 
@@ -11,22 +11,22 @@ Please note that for now, not every feature is implemented but the package can e
 
 ### What it implements
 
-* A client for the IDS7 AI API (`IDS7AIClient`)
-* A client for the IDS7 QIDO API (`IDS7QidoClient`)
-* A set of pydantic models to encapsulate and validate data sent and received from IDS7
+* A client for the DPAT AI API (`DPATAIClient`)
+* A client for the DPAT QIDO API (`DPATQidoClient`)
+* A set of pydantic models to encapsulate and validate data sent and received from DPAT
 
 
 ### What it does not implement, but might, at some point
 
-* A server to receive analysis requests from IDS7
+* A server to receive analysis requests from DPAT
 
 ## Installation
 
-To install ids7client (until it is published in pypi):
+To install sectra_dpat_client (until it is published in pypi):
 
 ```pip install .```
 
-To install ids7client with development dependencies (linting and formating, see below):
+To install sectra_dpat_client with development dependencies (linting and formating, see below):
 
 ```pip install ./[dev]```
 
@@ -37,16 +37,16 @@ Before using the client, make sure you have access to a valid authentication tok
 ### Example 1: Retrieve image information
 
 ```python
-from ids7client.ai import IDS7AIClient
+from sectra_dpat_client.ai import DPATAIClient
 
-# Callback info, sent by IDS7 in the request
+# Callback info, sent by DPAT in the request
 callback_url = "https://sectrapacs.com"
 callback_token = "abc"
 
-# Slide id, sent by IDS7 in the request
+# Slide id, sent by DPAT in the request
 slide_id = "blabla"
 
-client = IDS7AIClient(
+client = DPATAIClient(
     url=callback_url,
     token=callback_token
 )
@@ -60,7 +60,7 @@ image_info = client.get_image_info(slide_id, extended=True, phi=True)
 The following code creates a result payload that can be sent as response to display a frame on the whole slide and a label telling the user that the analysis is pending.
 
 ```python
-from ids7client.ai import (
+from sectra_dpat_client.ai import (
     ResultContent,
     ResultType,
     PrimitiveItem,
@@ -71,7 +71,7 @@ from ids7client.ai import (
     Result
 )
 
-# Slide id, sent by IDS7 in the request
+# Slide id, sent by DPAT in the request
 slide_id = "blabla"
 
 data = ResultContent(
@@ -112,17 +112,17 @@ result = Result(
 ### Example 3: Retrieving patient, request and exam id
 
 ```python
-from IDS7Client.ai import IDS7AIClient
-from IDS7Client.qido import IDS7QidoClient, DicomCodes
+from sectra_dpat_client.ai import DPATAIClient
+from sectra_dpat_client.qido import DPATQidoClient, DicomCodes
 
-# Callback info, sent by IDS7 in the request
+# Callback info, sent by DPAT in the request
 callback_url = "https://sectrapacs.com"
 callback_token = "abc"
 
-# Slide id, sent by IDS7 in the request
+# Slide id, sent by DPAT in the request
 slide_id = "blabla"
 
-ai_client = IDS7AIClient(
+ai_client = DPATAIClient(
     url=callback_url,
     token=callback_token
 )
@@ -131,7 +131,7 @@ ai_client = IDS7AIClient(
 image_info = client.get_image_info(slide_id, extended=True, phi=True)
 
 # Instanciates QIDO client with provided url, username and password
-qido_client = IDS7QidoClient(qido_url, qido_username, qido_password)
+qido_client = DPATQidoClient(qido_url, qido_username, qido_password)
 
 # Retrieve study from QIDO API
 study = qido_client.find_one_study(studyInstanceUid=data.study_id)
@@ -144,9 +144,9 @@ exam_id = study.get_value_as_string(DicomCodes.EXAM_ID)
 
 ### Error handling and retries
 
-Any request to the IDS7 server is retried 5 times with exponential delays if there is a connection error. Any other error is not handled by the clients.
+Any request to the DPAT server is retried 5 times with exponential delays if there is a connection error. Any other error is not handled by the clients.
 
-Clients raise `IDS7RequestError` if the IDS7 server returns an error status code (e.g., 400, 404, 500, etc.). The error includes the returned status code, text and the requested path.
+Clients raise `DPATRequestError` if the DPAT server returns an error status code (e.g., 400, 404, 500, etc.). The error includes the returned status code, text and the requested path.
 
 ## Code quality
 
@@ -171,4 +171,4 @@ One can lint the code using the following command:
 
 * HL7 API client
 * More detailed data validation (e.g., min and max lengths of arrays)
-* Missing IDS7 endpoints
+* Missing DPAT endpoints

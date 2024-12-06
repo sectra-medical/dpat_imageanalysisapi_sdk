@@ -61,7 +61,7 @@ class InvocationBase(BaseModel):
 
 
 class Invocation(InvocationBase):
-    """Model for invocations from IDS7."""
+    """Model for invocations from DPAT."""
 
     action: Action
     input: Optional[Union[CreateInput, ResultResponse]] = None
@@ -74,6 +74,6 @@ class Invocation(InvocationBase):
 
 
 class ImageNotification(InvocationBase):
-    """Model for new image notification from IDS7."""
+    """Model for new image notification from DPAT."""
 
     imageInfo: ImageInfo

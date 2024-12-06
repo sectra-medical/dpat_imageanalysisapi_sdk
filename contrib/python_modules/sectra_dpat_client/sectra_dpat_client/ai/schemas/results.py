@@ -105,7 +105,7 @@ class Attachment(BaseModel):
 
 
 class Result(BaseModel):
-    """Schema for result posting in IDS7 server."""
+    """Schema for result posting in DPAT server."""
 
     slideId: str
     displayResult: str
@@ -116,7 +116,7 @@ class Result(BaseModel):
 
 
 class ResultResponse(Result):
-    """Schema for result retrieval from IDS7 server."""
+    """Schema for result retrieval from DPAT server."""
 
     id: int
     versionId: str
