@@ -1,4 +1,4 @@
-from .client import IDS7AIClient
+from .client import DPATAIClient
 from .schemas import (
     Action,
     ApplicationInfo,

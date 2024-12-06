@@ -1,5 +1,5 @@
-class IDS7RequestError(Exception):
-    """Exception raised when a request to IDS7 has failed."""
+class DPATRequestError(Exception):
+    """Exception raised when a request to DPAT has failed."""
 
     __slots__ = ("status_code", "text", "path")
 

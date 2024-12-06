@@ -17,10 +17,10 @@ def _load_requirements(req_file: str):
 
 
 setup(
-    name="ids7client",
+    name="sectra_dpat_client",
     version=__version__,
     author="Primaa",
-    description="Client for Sectra IDS7 server",
+    description="Client for Sectra DPAT server",
     install_requires=_load_requirements("requirements.txt"),
     extras_require={"dev": _load_requirements("extra_requirements.txt")},
     packages=find_packages(),
