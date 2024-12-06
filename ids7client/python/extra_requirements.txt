@@ -1,0 +1,7 @@
+bandit
+black
+flake8
+isort
+mypy
+types-requests
+types-setuptools
