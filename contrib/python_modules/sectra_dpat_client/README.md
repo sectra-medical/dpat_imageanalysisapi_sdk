@@ -6,13 +6,13 @@ This python package aims to facilite the development of AI applications integrat
 
 Please note that for now, not every feature is implemented but the package can easily be enriched:
 
-* some endpoints are missing (e.g., slide downloading)
+* Some endpoints are missing (e.g., slide downloading)
 * QIDO client is pretty basic
 
 ### What it implements
 
-* A client for the DPAT AI API (`DPATAIClient`)
-* A client for the DPAT QIDO API (`DPATQidoClient`)
+* A client for the DPAT IA-API ("AI") API (`DPATAIClient`)
+* A client for the DICOMWEB QIDO API (`DPATQidoClient`)
 * A set of pydantic models to encapsulate and validate data sent and received from DPAT
 
 
