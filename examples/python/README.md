@@ -6,7 +6,7 @@ This document outlines how we suggest you try the examples to get started using 
 
 ### Prerequisites
 
-- We assume you have a copy of the document *"Interface Specification: Pathology Image Analysis Application Interface, Sectra Digital Pathology Module"*. At the time of writing, the most recent version was *"Verion 4.1, August 2024"*.
+- We assume you have a copy of the document *"Interface Specification: Pathology Image Analysis Application Interface, Sectra Digital Pathology Module"*. At the time of writing, the most recent version was *"Verion 4.2, March 2025"*.
   - This document describes all the REST endpoints and corresponding json schemas.
   - Contact Sectra for a copy, see https://forms.office.com/e/WBEsUrLyJV
 
