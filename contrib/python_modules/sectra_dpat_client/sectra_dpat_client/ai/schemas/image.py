@@ -2,6 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
+from .quality_control import QualityControlData
 from .common import DisplayedName, Size
 
 
@@ -58,8 +59,9 @@ class ImageInfo(BaseModel):
     bodyPart: Optional[str] = None
     examCode: Optional[str] = None
     examDescription: Optional[str] = None
-    stationName: str
+    stationName: Optional[str] = None
     priority: Optional[int] = None
+    qualityControl: Optional[QualityControlData] = None
     seriesInstanceUid: Optional[str] = None
     lisSlideId: Optional[str] = None
     accessionNumberIssuer: Optional[str] = None
@@ -68,3 +70,12 @@ class ImageInfo(BaseModel):
     examId: Optional[str] = None
     examDateTime: Optional[str] = None
     examFreeFields: Optional[List[Dict[str, str]]] = None
+
+
+class CaseImageInfo(BaseModel):
+    id: str
+    staining: DisplayedName
+    block: DisplayedName
+    specimen: Optional[Specimen] = None
+    seriesInstanceUid: Optional[str] = None
+    lisSlideId: Optional[str] = None

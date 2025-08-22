@@ -5,6 +5,7 @@ from .schemas import (
     Attachment,
     AttachmentState,
     CallbackInfo,
+    CaseImageInfo,
     Context,
     CreateInput,
     DisplayedName,
@@ -38,4 +39,7 @@ from .schemas import (
     TaggedPolygonContent,
     TaggedPolygonInputContent,
     TileFormat,
+    QualityControl,
+    QualityControlData,
+    QualityControlStatus,
 )

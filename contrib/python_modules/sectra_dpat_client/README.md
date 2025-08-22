@@ -15,7 +15,6 @@ Please note that for now, not every feature is implemented but the package can e
 * A client for the DICOMWEB QIDO API (`DPATQidoClient`)
 * A set of pydantic models to encapsulate and validate data sent and received from DPAT
 
-
 ### What it does not implement, but might, at some point
 
 * A server to receive analysis requests from DPAT
@@ -140,6 +139,66 @@ study = qido_client.find_one_study(studyInstanceUid=data.study_id)
 patient_id = study.get_value_as_string(DicomCodes.PATIENT_ID)
 request_id = study.get_value_as_string(DicomCodes.REQUEST_ID)
 exam_id = study.get_value_as_string(DicomCodes.EXAM_ID)
+```
+
+### Example 4: Retrieving all images in a case
+
+Available from IA-API 1.9 (DPAT 4.1)
+
+```python
+from sectra_dpat_client.ai import DPATAIClient
+
+# Callback info, sent by DPAT in the request
+callback_url = "https://sectrapacs.com"
+callback_token = "abc"
+
+accession_number = "blabla"
+
+ai_client = DPATAIClient(
+    url=callback_url,
+    token=callback_token
+)
+
+# Returns info on all images in case
+image_infos = client.get_image_infos_in_case(accession_number)
+
+for image in image_infos:
+    # `get_image_info` returns more detailed data than `get_image_infos_in_case`
+    detailed_image_info = client.get_image_info(image.id, extended=True, phi=True)
+```
+
+### Example 5: Updating quality control data for a slide
+
+Available from IA-API 1.10 (DPAT 4.2)
+
+```python
+from sectra_dpat_client.ai import DPATAIClient
+from sectra_dpat_client.ai import QualityControl, QualityControlStatus
+
+# Callback info, sent by DPAT in the request
+callback_url = "https://sectrapacs.com"
+callback_token = "abc"
+
+slide_id = "blabla"
+
+ai_client = DPATAIClient(
+    url=callback_url,
+    token=callback_token
+)
+
+# Returns the image info
+image_info = client.get_image_info(slide_id)
+
+# Check if `quality_control` is provided (should be for supported systems) and if the quality control status is not already set to OK
+if image_info.quality_control is not None and image_info.quality_control.status != QualityControlStatus.QUALITY_OK:
+    # Update quality control status. Important to keep the same `versionId`.
+    quality_control_data = image_info.quality_control
+    quality_control_data.status = QualityControlStatus.QUALITY_OK
+    quality_control = QualityControl(
+        applicationVersion="1.0.0",
+        qualityControl=quality_control_data
+    )
+    ai_client.set_quality_control(slide_id, quality_control)
 ```
 
 ### Error handling and retries

@@ -7,7 +7,15 @@ from .common import (
     Polygon,
     Size,
 )
-from .image import FocalPlane, ImageInfo, OpticalPath, SlideFormat, Specimen, TileFormat
+from .image import (
+    CaseImageInfo,
+    FocalPlane,
+    ImageInfo,
+    OpticalPath,
+    SlideFormat,
+    Specimen,
+    TileFormat,
+)
 from .info import ApplicationInfo
 from .invocation import (
     Action,
@@ -35,3 +43,4 @@ from .results import (
     Status,
     Style,
 )
+from .quality_control import QualityControl, QualityControlData, QualityControlStatus

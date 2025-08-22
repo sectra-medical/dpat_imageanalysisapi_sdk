@@ -1,12 +1,20 @@
 import logging
-from typing import Dict, Optional, cast
+from typing import Optional, cast
 
 import requests
 
 from sectra_dpat_client.errors import DPATRequestError
 from sectra_dpat_client.helpers import JSONPayload, connection_retry
 
-from .schemas import ApplicationInfo, ImageInfo, Result, ResultResponse
+
+from .schemas import (
+    ApplicationInfo,
+    ImageInfo,
+    Result,
+    ResultResponse,
+    QualityControl,
+    CaseImageInfo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +108,62 @@ class DPATAIClient:
             return resp.json()
         return None
 
+    def get_image_infos_in_case(
+        self,
+        accession_number: str,
+        phi: bool = False,
+        accession_number_issuer_id: Optional[str] = None,
+    ) -> list[CaseImageInfo]:
+        """Retrieves all slides in a case. Available from IA-API 1.9 (DPAT 4.1).
+
+        Args:
+            accession_number (str): Accession number of the case
+            phi (bool): Whether Protected Health Information should be included or not.
+                Defaults to False.
+            accession_number_issuer_id (Optional[str]): Issuer ID of the accession number.
+                Defaults to None.
+        Returns:
+            list[CaseImageInfo]: List of slides in the case
+
+        """
+        path = f"/requests/{accession_number}/images/info"
+        params: dict[str, str] = {}
+        if phi:
+            params["includePHI"] = "true"
+        if accession_number_issuer_id:
+            params["accessionNumberIssuerId"] = accession_number_issuer_id
+        return [
+            CaseImageInfo(**img) for img in cast(list[dict], self._get(path, **params))
+        ]
+
+    def get_image_infos_in_case_by_slide_id(
+        self,
+        slide_id: str,
+        phi: bool = False,
+        accession_number_issuer_id: Optional[str] = None,
+    ) -> list[CaseImageInfo]:
+        """Retrieves all slides in the case a slide belongs to. Available from IA-API 1.9 (DPAT 4.1).
+
+        Args:
+            slide_id (str): Id of the slide
+            phi (bool): Whether Protected Health Information should be included or not.
+                Defaults to False.
+            accession_number_issuer_id (Optional[str]): Issuer ID of the accession number.
+                Defaults to None.
+        Returns:
+            list[CaseImageInfo]: List of slides in the case
+
+        """
+        path = f"/slides/{slide_id}/request/images/info"
+        params: dict[str, str] = {}
+        if phi:
+            params["includePHI"] = "true"
+        if accession_number_issuer_id:
+            params["accessionNumberIssuerId"] = accession_number_issuer_id
+        return [
+            CaseImageInfo(**img) for img in cast(list[dict], self._get(path, **params))
+        ]
+
     def get_image_info(
         self, slide_id: str, extended: bool = False, phi: bool = False
     ) -> ImageInfo:
@@ -116,7 +180,7 @@ class DPATAIClient:
             ImageInfo: Requested slide info
         """
         path = f"/slides/{slide_id}/info"
-        params: Dict[str, str] = {}
+        params: dict[str, str] = {}
         if extended:
             params["scope"] = "extended"
         if phi:
@@ -161,3 +225,18 @@ class DPATAIClient:
         path = f"/application/{self._app_id}/results/{id}"
         resp = self._put(path, results.model_dump())
         return ResultResponse(**cast(dict, resp))
+
+    def set_quality_control(
+        self, slide_id: str, quality_control: QualityControl
+    ) -> None:
+        """Sets quality control for a slide. Available from IA-API 1.10 (DPAT 4.2).
+
+        Args:
+            slide_id (str): Id of the slide to set quality control for
+            quality_control (QualityControl): Quality control data to set
+
+        Raises:
+            DPATRequestError: If the request fails
+        """
+        path = f"/slides/{slide_id}/qualityControl"
+        self._put(path, quality_control.model_dump(), parse_response=False)
