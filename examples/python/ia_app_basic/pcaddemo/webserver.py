@@ -88,7 +88,7 @@ def app_on_userinput():
     """
     response = {}
     data = request.get_json()
-
+    os.makedirs("./debug", exist_ok=True)  # ensure debug directory exists
     save_filename = f"./debug/userinput_{data['action']}_tmp.json"
     with open(save_filename, "w") as file:
         json.dump(data, file)
