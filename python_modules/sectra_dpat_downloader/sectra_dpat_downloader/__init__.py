@@ -1,0 +1,1 @@
+from sectra_dpat_downloader.client import SectraDpatDownloader
