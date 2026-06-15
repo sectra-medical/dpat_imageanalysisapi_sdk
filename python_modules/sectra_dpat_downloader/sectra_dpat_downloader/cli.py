@@ -98,7 +98,13 @@ def download_wsi_images_in_case(
     "--application-id", required=True, help="Application ID for authentication"
 )
 @click.option("--username", required=True, help="Username for authentication")
-@click.option("--password", required=True, help="Password for authentication")
+@click.option(
+    "--password",
+    required=True,
+    prompt=True,
+    hide_input=True,
+    help="Password for authentication",
+)
 @click.option("--accession-number", required=True, help="Accession number of exam")
 @click.option(
     "--output-folder",
