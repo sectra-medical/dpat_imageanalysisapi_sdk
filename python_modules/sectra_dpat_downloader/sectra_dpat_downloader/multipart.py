@@ -63,7 +63,7 @@ class MultipartParser:
     def _check_for_end_of_stream(self) -> bool:
         """Check if the end delimiter is in the buffer and if the stream has ended.
 
-        Expect that a boundary has just been read from straem. Raises RuntimeError if
+        Expect that a boundary has just been read from stream. Raises RuntimeError if
         end delimiter found but not end of stream.
 
         Stores any data for the next part in buffer.
@@ -143,38 +143,22 @@ class MultipartParser:
         Iterator[bytes]
             Chunks of the part.
         """
-        # Check if given chunk contains the Boundary
-        end_index = self._buffer.find(self._boundary)
-        while end_index == -1:
-            # Boundary not found, read in next chunk
-            next_chunk = self._read_next_chunk_from_stream()
-            # Check if boundary between chunks. Need at most boundary length - 1 from
-            # each chunk.
-            first_chunk_boundary = self._buffer[-self._boundary_length + 1 :]
-            second_chunk_boundary = next_chunk[: self._boundary_length - 1]
-            chunk_boundary = first_chunk_boundary + second_chunk_boundary
-            end_index_in_chunk_boundary = chunk_boundary.find(self._boundary)
-            if end_index_in_chunk_boundary > 0:
-                logging.debug("Boundary found between chunks")
-                # Boundary found between chunks
-                # Yield the buffer up to the Boundary
-                yield self._buffer[
-                    : -self._boundary_length + 1 + end_index_in_chunk_boundary
-                ]
-                # Set the buffer to the remaining data
-                self._buffer = next_chunk[
-                    : self._boundary_length - 1 + end_index_in_chunk_boundary
-                ]
-                return
-            # Boundary not in between chunks, so yield the buffer and continue
-            yield self._buffer
-            self._buffer = next_chunk
+        while True:
             end_index = self._buffer.find(self._boundary)
-
-        # Boundary found in the chunk, yield the chunk up to the boundary
-        yield self._buffer[:end_index]
-        # Set the buffer to the remaining data after the boundary
-        self._buffer = self._buffer[end_index + self._boundary_length :]
+            if end_index != -1:
+                # Boundary found, yield the content up to the boundary and keep
+                # the remainder (after the boundary) for the next part.
+                yield self._buffer[:end_index]
+                self._buffer = self._buffer[end_index + self._boundary_length :]
+                return
+            # Boundary not in buffer. Its first bytes may sit at the end of the
+            # buffer and complete in the next chunk, so retain the last
+            # (boundary_length - 1) bytes and yield everything before them.
+            if len(self._buffer) >= self._boundary_length:
+                flushable_length = len(self._buffer) - self._boundary_length + 1
+                yield self._buffer[:flushable_length]
+                self._buffer = self._buffer[flushable_length:]
+            self._buffer += self._read_next_chunk_from_stream()
 
     def _read_next_chunk_from_stream(self) -> bytes:
         """Read the next chunk from the stream.
