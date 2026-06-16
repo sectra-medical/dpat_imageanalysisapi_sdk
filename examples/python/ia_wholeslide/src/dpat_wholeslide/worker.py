@@ -231,6 +231,8 @@ def download_wsi(folder):
                         f.write(chunk)
                 print(f"wsi saved to '{dest_path}'")
             else:
+                for _ in file_chunks:
+                    pass
                 print(f"file already existed, ignored: '{dest_path}'")
     else:
         # application/octet-stream -- single file
