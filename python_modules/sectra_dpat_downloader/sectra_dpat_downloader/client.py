@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 import urllib.parse
 
-from requests import Response
+from httpx import Response
 
 from sectra_dpat_downloader.http_client import HttpClient
 from sectra_dpat_downloader.models import CaseImage, Image
@@ -10,20 +10,47 @@ from sectra_dpat_downloader.multipart import MultipartParser
 
 
 class SectraDpatDownloader:
-    """Client for fetching metadata and images from Sectra athology server using
+    """Client for fetching metadata and images from Sectra pathology server using
     image analysis api. Requires DPAT >= 4.1.
     """
 
     def __init__(
         self,
+        http_client: HttpClient,
+        application_id: str,
+        chunk_size: int = 64 * 1024 * 1024,
+    ):
+        """
+        Create a client from an existing HTTP client.
+
+        Use this when the HTTP client is managed elsewhere, e.g. as a singleton
+        in a dependency injection container, so its session and cached token are
+        shared. For simple usage from credentials, see ``from_credentials``.
+
+        Parameters
+        ----------
+        http_client : HttpClient
+            HTTP client handling authentication and requests.
+        application_id : str
+            ID of the application to identify as. Used for the result endpoints.
+        chunk_size: int = 64 * 1024 * 1024
+            Chunk size for streaming file from response to disk. Defaults to 64 MB.
+        """
+        self._client = http_client
+        self._application_id = application_id
+        self._chunk_size = chunk_size
+
+    @classmethod
+    def from_credentials(
+        cls,
         base_url: str,
         application_id: str,
         username: str,
         password: str,
         chunk_size: int = 64 * 1024 * 1024,
-    ):
+    ) -> "SectraDpatDownloader":
         """
-        Create a client.
+        Create a client from credentials.
 
         Parameters
         ----------
@@ -38,9 +65,17 @@ class SectraDpatDownloader:
             Password for authentication.
         chunk_size: int = 64 * 1024 * 1024
             Chunk size for streaming file from response to disk. Defaults to 64 MB.
+
+        Returns
+        -------
+        SectraDpatDownloader
+            Client backed by a new HTTP client for the given credentials.
         """
-        self._client = HttpClient(base_url, username, password, application_id)
-        self._chunk_size = chunk_size
+        return cls(
+            HttpClient(base_url, username, password, application_id),
+            application_id,
+            chunk_size,
+        )
 
     def get_images_in_case(
         self,
@@ -120,7 +155,7 @@ class SectraDpatDownloader:
         slide_id : str
             The slide ID to download image files for.
         output_folder : Union[str, Path]
-            Folder path to write downloades image files to.
+            Folder path to write downloaded image files to.
 
         Returns
         -------
@@ -133,10 +168,15 @@ class SectraDpatDownloader:
         if not output_folder.is_dir():
             raise ValueError(f"Path {output_folder} is not a directory")
         response = self._client.get(f"/slides/{slide_id}/files", stream=True)
-        content_type = response.headers["content-type"]
-        if content_type.startswith("multipart/related"):
-            return list(self._handle_multipart_file_response(response, output_folder))
-        return [self._handle_file_response(response, output_folder)]
+        try:
+            content_type = response.headers["content-type"]
+            if content_type.startswith("multipart/related"):
+                return list(
+                    self._handle_multipart_file_response(response, output_folder)
+                )
+            return [self._handle_file_response(response, output_folder)]
+        finally:
+            response.close()
 
     def _handle_multipart_file_response(
         self, response: Response, output_folder: Path
@@ -161,7 +201,7 @@ class SectraDpatDownloader:
             .split(";")[0]
             .strip('"')
         )
-        parser = MultipartParser(response.iter_content(self._chunk_size), boundary)
+        parser = MultipartParser(response.iter_bytes(self._chunk_size), boundary)
         for filename, file_chunks in parser.parts():
             yield self._write_chunks_to_file(file_chunks, output_folder, filename)
 
@@ -182,7 +222,7 @@ class SectraDpatDownloader:
         """
         content_disposition = response.headers["content-disposition"]
         filename = content_disposition.split("filename=")[1].strip('"')
-        chunks = response.iter_content(self._chunk_size)
+        chunks = response.iter_bytes(self._chunk_size)
         return self._write_chunks_to_file(chunks, output_folder, filename)
 
     @staticmethod

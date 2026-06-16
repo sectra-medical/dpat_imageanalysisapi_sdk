@@ -21,7 +21,7 @@ def download_wsi_images_in_case(
 ):
     if not output_folder.exists():
         output_folder.mkdir(parents=True, exist_ok=True)
-    client = SectraDpatDownloader(
+    client = SectraDpatDownloader.from_credentials(
         base_url=base_url,
         application_id=application_id,
         username=username,
