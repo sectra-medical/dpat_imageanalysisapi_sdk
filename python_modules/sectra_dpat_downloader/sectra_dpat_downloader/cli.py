@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Callable, Iterable, Optional
+from typing import Callable, Iterable, List, Optional
 
 import click
 from sectra_dpat_downloader.models import CaseImage
@@ -61,6 +61,8 @@ def download_wsi_images_in_case(
                     )
                 )
 
+    failed_image_ids: List[str] = []
+
     def process_image(image: CaseImage):
         try:
             image_id = image.lis_slide_id or image.id
@@ -87,8 +89,14 @@ def download_wsi_images_in_case(
                 f"Failed to download image {image.id} with staining {image.staining.display_name} and block {image.block.display_name}",
                 exc_info=True,
             )
+            failed_image_ids.append(image.id)
 
     map_function(process_image, images_in_case, max_workers=threads)
+    if failed_image_ids:
+        raise RuntimeError(
+            f"Failed to download {len(failed_image_ids)} of {len(images_in_case)} "
+            f"images in case {accession_number}: {', '.join(failed_image_ids)}"
+        )
     logging.info(f"WSI images downloaded to {output_folder}")
 
 
@@ -149,14 +157,17 @@ def main(
     """Download WSI images in exam from a server."""
     logging.basicConfig(level=log_level)
 
-    download_wsi_images_in_case(
-        base_url=base_url,
-        application_id=application_id,
-        username=username,
-        password=password,
-        accession_number=accession_number,
-        output_folder=output_folder,
-        accession_number_issuer=accession_number_issuer,
-        include_metadata=metadata,
-        threads=threads,
-    )
+    try:
+        download_wsi_images_in_case(
+            base_url=base_url,
+            application_id=application_id,
+            username=username,
+            password=password,
+            accession_number=accession_number,
+            output_folder=output_folder,
+            accession_number_issuer=accession_number_issuer,
+            include_metadata=metadata,
+            threads=threads,
+        )
+    except RuntimeError as error:
+        raise click.ClickException(str(error))
