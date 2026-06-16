@@ -30,9 +30,29 @@ function ImageViewer({
   appBarHeight,
   selectorHeight,
 }: ImageViewerProps) {
-  const [selectedImage, setSelectedImage] = useState<Image>(
+  const [selectedImage, setSelectedImage] = useState<Image | undefined>(
     Object.values(images)[0]
   );
+
+  if (!selectedImage) {
+    return (
+      <Box
+        style={{
+          position: "fixed",
+          top: appBarHeight,
+          left: 0,
+          width: "100vw",
+          height: `calc(100vh - ${appBarHeight}px)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        No images available for this exam.
+      </Box>
+    );
+  }
+
   return (
     <>
       <Box

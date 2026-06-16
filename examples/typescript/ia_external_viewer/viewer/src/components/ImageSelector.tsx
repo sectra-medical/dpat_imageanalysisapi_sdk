@@ -21,7 +21,9 @@ async function getThumbnail(
   const width = Math.round(
     (image.imageSize.width * height) / image.imageSize.height
   );
-  const baseDziLevel = Math.ceil(Math.log2(image.imageSize.width));
+  const baseDziLevel = Math.ceil(
+    Math.log2(Math.max(image.imageSize.width, image.imageSize.height))
+  );
   const thumbnailDziLevel = Math.ceil(Math.log2(width)) + 1;
   const levelWidth =
     image.imageSize.width / Math.pow(2, baseDziLevel - thumbnailDziLevel);
@@ -52,7 +54,7 @@ async function getThumbnail(
         .getTileAsync(image.id, thumbnailDziLevel, x, y, "0", "jpeg")
         .then((tileBlob) => {
           return new Promise<void>((resolve) => {
-            const img = new Image();
+            const img = new window.Image();
             img.onload = () => {
               ctx.drawImage(
                 img,

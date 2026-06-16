@@ -141,7 +141,7 @@ export class ImageAnalysisApiClient implements IImageAnalysisApiClient {
     }
 
     async getImagesInRequestAsync(accessionNumber: string, accessionNumberIssuer?: string): Promise<CaseImage[]> {
-        let url = `${this.controller}/requests/${accessionNumber}/images`;
+        let url = `${this.controller}/requests/${accessionNumber}/images/info`;
         if (accessionNumberIssuer) {
             url += `?accessionNumberIssuer=${encodeURIComponent(accessionNumberIssuer)}`;
         }
@@ -203,7 +203,7 @@ export class ImageAnalysisApiClient implements IImageAnalysisApiClient {
         start?: number,
         end?: number
     ): Promise<Uint8Array> {
-        const url = `${this.controller}/applications/${this.configuration.applicationId}/results/${resultId}/attachments?name=${attachmentName}`;
+        const url = `${this.controller}/applications/${this.configuration.applicationId}/results/${resultId}/attachments?name=${encodeURIComponent(attachmentName)}`;
         return await this.getBytes(url, start, end);
     }
 
@@ -213,6 +213,15 @@ export class ImageAnalysisApiClient implements IImageAnalysisApiClient {
             headers['Range'] = `bytes=${start}-${end}`;
         }
         const response = await fetch(url, { method: 'GET', headers: headers});
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new ImageAnalysisApiClientUnauthorizedException();
+            }
+            throw new Error(
+                `Failed to get bytes from ${url}. Got response status ${response.status} ` +
+                `and reason ${response.statusText}.`
+            );
+        }
         return new Uint8Array(await response.arrayBuffer());
     }
 
@@ -232,7 +241,7 @@ export class ImageAnalysisApiClient implements IImageAnalysisApiClient {
     }
 
     private async putAsync<T>(url: string, item: T): Promise<T> {
-        const headers = this.versionHeader
+        const headers = {...this.versionHeader, "Content-Type": "application/json" };
         const response = await fetch(url, { method: 'PUT', headers: headers, body: JSON.stringify(item) });
         if (!response.ok) {
             if (response.status === 401) {

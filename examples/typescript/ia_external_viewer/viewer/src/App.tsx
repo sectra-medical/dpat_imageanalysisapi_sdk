@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { Paper } from "@mui/material";
@@ -33,7 +33,12 @@ function App() {
     []
   );
 
-  onstorage = (event) => closeOnExamStateChange(event, exam, setClosed);
+  useEffect(() => {
+    const handler = (event: StorageEvent) =>
+      closeOnExamStateChange(event, exam, setClosed);
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, [exam]);
 
   return (
     <Paper

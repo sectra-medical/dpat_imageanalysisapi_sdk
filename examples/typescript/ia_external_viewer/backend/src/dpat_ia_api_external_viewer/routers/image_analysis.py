@@ -254,7 +254,9 @@ async def store_result(
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
-        response = await client.post(url, headers=headers, json=result)
+        response = await client.post(
+            url, headers=headers, json=result.model_dump(by_alias=True)
+        )
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Unauthorized")
         if response.status_code not in [200, 201]:
@@ -298,7 +300,9 @@ async def modify_result(
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
-        response = await client.put(url, headers=headers, json=result)
+        response = await client.put(
+            url, headers=headers, json=result.model_dump(by_alias=True)
+        )
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Unauthorized")
         if response.status_code != 200:
@@ -312,10 +316,10 @@ async def get_results_for_slide(
     slide_id: Annotated[str, Path(title="The slide ID")],
     token: str = Cookie(None, alias="Token"),
     callback_url: str = Cookie(None, alias="Callback-Url"),
-    settings=Depends(get_settings),
+    client: httpx.AsyncClient = Depends(get_http_client),
 ):
     """Return list of results for slide."""
-    async with httpx.AsyncClient(verify=settings.ignore_ssl_errors) as client:
+    async with client:
         url = f"{callback_url}/applications/{app_id}/results/slide/{slide_id}"
         headers = {"Authorization": f"Bearer {token}"}
         response = await client.get(url, headers=headers)
@@ -337,17 +341,17 @@ async def download_attachment(
     end: Annotated[Optional[int], Query(title="The end byte position", ge=0)] = None,
     token: str = Cookie(None, alias="Token"),
     callback_url: str = Cookie(None, alias="Callback-Url"),
-    settings=Depends(get_settings),
+    client: httpx.AsyncClient = Depends(get_http_client),
 ):
     """Download attachment for result."""
-    async with httpx.AsyncClient(verify=settings.ignore_ssl_errors) as client:
-        url = f"{callback_url}/applications/{app_id}/results/{result_id}/attachments?name={name}"
+    async with client:
+        url = f"{callback_url}/applications/{app_id}/results/{result_id}/attachments"
         headers = {"Authorization": f"Bearer {token}"}
 
         if start is not None and end is not None:
             headers["Range"] = f"bytes={start}-{end}"
 
-        response = await client.get(url, headers=headers)
+        response = await client.get(url, headers=headers, params={"name": name})
         if response.status_code == 401:
             raise HTTPException(status_code=401, detail="Unauthorized")
         if response.status_code not in [200, 206]:
