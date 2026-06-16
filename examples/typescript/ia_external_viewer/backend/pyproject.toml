@@ -1,0 +1,19 @@
+[project]
+name = "dpat-ia-api-external-viewer"
+version = "0.1.0"
+description = "Backend for Sectra DPAT IA API External Viewer example"
+readme = "README.md"
+authors = [
+    { name = "Erik O Gabrielsson", email = "erik.o.gabrielsson@sectra.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.118.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.11.0",
+    "uvicorn>=0.37.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
