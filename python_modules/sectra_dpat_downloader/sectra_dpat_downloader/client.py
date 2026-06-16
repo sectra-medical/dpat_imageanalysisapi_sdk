@@ -24,6 +24,8 @@ class SectraDpatDownloader:
         http_client: HttpClient,
         application_id: str,
         chunk_size: int = 64 * 1024 * 1024,
+        *,
+        owns_client: bool = False,
     ):
         """
         Create a client from an existing HTTP client.
@@ -40,10 +42,31 @@ class SectraDpatDownloader:
             ID of the application to identify as. Used for the result endpoints.
         chunk_size: int = 64 * 1024 * 1024
             Chunk size for streaming file from response to disk. Defaults to 64 MB.
+        owns_client: bool = False
+            Whether this instance owns the HTTP client and should close it when
+            ``close()`` is called. Defaults to False, so an injected client is
+            left for its owner to close.
         """
         self._client = http_client
         self._application_id = application_id
         self._chunk_size = chunk_size
+        self._owns_client = owns_client
+
+    def close(self) -> None:
+        """Close the client and release its connections.
+
+        Only closes the underlying HTTP client when this instance created it
+        (i.e. via ``from_credentials``). An HTTP client passed to ``__init__``
+        is assumed to be managed elsewhere and is left untouched.
+        """
+        if self._owns_client:
+            self._client.close()
+
+    def __enter__(self) -> "SectraDpatDownloader":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
 
     @classmethod
     def from_credentials(
@@ -80,6 +103,7 @@ class SectraDpatDownloader:
             HttpClient(base_url, username, password, application_id),
             application_id,
             chunk_size,
+            owns_client=True,
         )
 
     def get_images_in_case(

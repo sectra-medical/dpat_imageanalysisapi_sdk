@@ -165,3 +165,36 @@ class TestToken:
         # "user:pass" base64-encoded is dXNlcjpwYXNz.
         assert token_requests[0].headers["Authorization"] == "Basic dXNlcjpwYXNz"
         assert "applicationId=app-id" in str(token_requests[0].url)
+
+
+class TestClose:
+    def test_close_closes_owned_client(self):
+        # Arrange
+        client = HttpClient("http://test.example.com", "user", "pass", "app-id")
+
+        # Act
+        client.close()
+
+        # Assert
+        assert client._client.is_closed
+
+    def test_close_leaves_injected_client_open(self):
+        # Arrange
+        httpx_client = httpx.Client(transport=httpx.MockTransport(lambda r: r))
+        client = HttpClient(
+            "http://test.example.com", "user", "pass", "app-id", client=httpx_client
+        )
+
+        # Act
+        client.close()
+
+        # Assert
+        assert not httpx_client.is_closed
+
+    def test_context_manager_closes_owned_client(self):
+        # Arrange / Act
+        with HttpClient("http://test.example.com", "user", "pass", "app-id") as client:
+            inner = client._client
+
+        # Assert
+        assert inner.is_closed

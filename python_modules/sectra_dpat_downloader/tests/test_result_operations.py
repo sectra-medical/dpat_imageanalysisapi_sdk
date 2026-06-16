@@ -52,6 +52,38 @@ def _stub_response(decoy: Decoy) -> Response:
     return response
 
 
+class TestClose:
+    def test_injected_client_is_not_closed(
+        self, decoy: Decoy, downloader, mock_http
+    ):
+        # Act
+        downloader.close()
+
+        # Assert
+        # An injected client is managed by the caller, so close() is a no-op.
+        decoy.verify(mock_http.close(), times=0)
+
+    def test_owned_client_is_closed(self, decoy: Decoy, mock_http):
+        # Arrange
+        downloader = SectraDpatDownloader(mock_http, "app-1", owns_client=True)
+
+        # Act
+        downloader.close()
+
+        # Assert
+        decoy.verify(mock_http.close(), times=1)
+
+    def test_context_manager_does_not_close_injected_client(
+        self, decoy: Decoy, mock_http
+    ):
+        # Act
+        with SectraDpatDownloader(mock_http, "app-1"):
+            pass
+
+        # Assert
+        decoy.verify(mock_http.close(), times=0)
+
+
 class TestCreateResult:
     def test_posts_to_correct_url(self, decoy: Decoy, downloader, mock_http):
         # Arrange

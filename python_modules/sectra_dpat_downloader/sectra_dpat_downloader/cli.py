@@ -21,13 +21,30 @@ def download_wsi_images_in_case(
 ):
     if not output_folder.exists():
         output_folder.mkdir(parents=True, exist_ok=True)
-    client = SectraDpatDownloader.from_credentials(
+    with SectraDpatDownloader.from_credentials(
         base_url=base_url,
         application_id=application_id,
         username=username,
         password=password,
-    )
+    ) as client:
+        _download_images(
+            client=client,
+            accession_number=accession_number,
+            output_folder=output_folder,
+            accession_number_issuer=accession_number_issuer,
+            include_metadata=include_metadata,
+            threads=threads,
+        )
 
+
+def _download_images(
+    client: SectraDpatDownloader,
+    accession_number: str,
+    output_folder: Path,
+    accession_number_issuer: Optional[str],
+    include_metadata: bool,
+    threads: int,
+):
     images_in_case = list(
         client.get_images_in_case(
             accession_number=accession_number,

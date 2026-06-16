@@ -40,10 +40,26 @@ class HttpClient:
         self._username = username
         self._password = password
         self._application_id = application_id
+        self._owns_client = client is None
         self._client = client if client is not None else httpx.Client(timeout=30.0)
         self._token_valid_until: Optional[datetime.datetime] = None
         self._token_lock = threading.Lock()
         self._token_generation = 0
+
+    def close(self) -> None:
+        """Close the underlying HTTP client and release pooled connections.
+
+        Only closes the client if it was created by this instance. An
+        externally supplied client is left for its owner to close.
+        """
+        if self._owns_client:
+            self._client.close()
+
+    def __enter__(self) -> "HttpClient":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
 
     def get(self, url: str, stream: bool = False) -> httpx.Response:
         """Get response from url.
