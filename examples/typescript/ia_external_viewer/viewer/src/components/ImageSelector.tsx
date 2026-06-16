@@ -63,6 +63,8 @@ async function getThumbnail(
               );
               resolve();
             };
+            // Resolve on error too so a single failed tile can't hang Promise.all.
+            img.onerror = () => resolve();
             const blob = new Blob([tileBlob], { type: "image/jpeg" });
             img.src = URL.createObjectURL(blob);
           });
@@ -101,7 +103,7 @@ export default function ImageSelector({
   const size: Size = { width: height, height: height };
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
   useEffect(() => {
-    Object.values(images).map((image) => {
+    Object.values(images).forEach((image) => {
       getThumbnail(image, size.height, client).then((thumbnail) => {
         setThumbnails((prevThumbnails) => ({
           ...prevThumbnails,
