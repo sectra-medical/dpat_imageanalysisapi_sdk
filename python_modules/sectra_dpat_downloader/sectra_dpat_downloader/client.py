@@ -207,7 +207,10 @@ class SectraDpatDownloader:
         Path
             Path to the created file.
         """
-        filepath = output_folder.joinpath(filename)
+        safe_name = Path(filename.replace("\\", "/")).name
+        if not safe_name or safe_name in (".", ".."):
+            raise ValueError(f"Invalid filename in response: {filename!r}")
+        filepath = output_folder.joinpath(safe_name)
         with open(filepath, "wb") as file:
             for chunk in chunks:
                 file.write(chunk)
