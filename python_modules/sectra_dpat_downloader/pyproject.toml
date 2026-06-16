@@ -1,0 +1,27 @@
+[project]
+name = "sectra-dpat-downloader"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Erik O Gabrielsson", email = "erik.o.gabrielsson@sectra.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.3.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.12.2",
+]
+
+[project.optional-dependencies]
+tqdm = ["tqdm>=4.67.1"]
+
+[dependency-groups]
+dev = ["pytest>=8.3.0", "decoy>=2.1.0"]
+
+[project.scripts]
+sectra_dpat_downloader = "sectra_dpat_downloader.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
