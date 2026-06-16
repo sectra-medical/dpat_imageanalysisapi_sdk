@@ -12,13 +12,13 @@ import PIL.Image
 
 import click
 from click import secho
-from requests_toolbelt import MultipartDecoder
 from tqdm import tqdm
 
 from dpat_wholeslide.version import __version__
 from dpat_wholeslide.dzidesc import DziDescription
 from dpat_wholeslide.utils import requests_session_from_callbackinfo
 from dpat_wholeslide.locks import lock_release, lock_try_acquire
+from dpat_wholeslide.multipart import MultipartParser
 
 
 # %%
@@ -215,29 +215,24 @@ def download_wsi(folder):
     secho(f"downloading WSI for '{folder_path}'")
     r = api.get(f"slides/{slide_id}/files", stream=True)
 
-    # TODO: the MultipartDecoder in requests-toolbelt reads the entire r.content
-    #       into memory, which means we need to rewrite this to use a custom implementation
     if r.headers["Content-Type"].startswith("multipart/related"):
         # multiple files
-        decoder = MultipartDecoder.from_response(r, "utf-8")
-        for r_part in decoder.parts:
-            # take all keys in r_part.headers and convert them from byte to str
-            headers = {
-                k.decode("utf-8"): v.decode("utf-8") for k, v in r_part.headers.items()
-            }
-            filename = (
-                headers["Content-Disposition"].split("filename=")[1].strip('""')
-                + ".dcm"
-            )
-            dest_path = folder_path / f"wsi_files/{filename}"
+        boundary = (
+            r.headers["Content-Type"].split("boundary=")[1].split(";")[0].strip('"')
+        )
+        parser = MultipartParser(r.iter_content(1024 * 1024), boundary)
+        for filename, file_chunks in parser.parts():
+            # Only trust the filename component to avoid writing outside wsi_files.
+            dest_path = folder_path / "wsi_files" / Path(filename).name
             if not dest_path.exists():
                 dest_path.parent.mkdir(exist_ok=True, parents=True)
-                # we can safely write the entire content to disk here
-                # because it is already in memory
                 with open(dest_path, "wb") as f:
-                    f.write(r_part.content)
+                    for chunk in file_chunks:
+                        f.write(chunk)
                 print(f"wsi saved to '{dest_path}'")
             else:
+                for _ in file_chunks:
+                    pass
                 print(f"file already existed, ignored: '{dest_path}'")
     else:
         # application/octet-stream -- single file
