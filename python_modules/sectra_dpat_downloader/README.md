@@ -21,7 +21,9 @@ The user needs to have `Request Image Analysis Api Authentication Token` permiss
 ```python
 from sectra_dpat_downloader import SectraDpatDownloader
 
-client = SectraDpatDownloader('base url', 'application id', 'user name', 'password')
+client = SectraDpatDownloader.from_credentials(
+    'base url', 'application id', 'user name', 'password'
+)
 
 images = client.get_images_in_case("accession number")
 
@@ -29,6 +31,18 @@ for image in images:
     image_metadata = client.get_image_metadata(image.id)
     image_label = client.get_image_label(image.id)
     image_files = client.download_image_files(image.id, "output path")
+```
+
+To reuse an existing, configured HTTP client (for example a singleton managed
+by a dependency injection container), construct the client directly with an
+`HttpClient`:
+
+```python
+from sectra_dpat_downloader import SectraDpatDownloader
+from sectra_dpat_downloader.http_client import HttpClient
+
+http_client = HttpClient('base url', 'user name', 'password', 'application id')
+client = SectraDpatDownloader(http_client, 'application id')
 ```
 
 ## CLI
