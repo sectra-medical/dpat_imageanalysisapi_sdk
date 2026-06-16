@@ -222,7 +222,8 @@ def download_wsi(folder):
         )
         parser = MultipartParser(r.iter_content(1024 * 1024), boundary)
         for filename, file_chunks in parser.parts():
-            dest_path = folder_path / f"wsi_files/{filename}"
+            # Only trust the filename component to avoid writing outside wsi_files.
+            dest_path = folder_path / "wsi_files" / Path(filename).name
             if not dest_path.exists():
                 dest_path.parent.mkdir(exist_ok=True, parents=True)
                 with open(dest_path, "wb") as f:
