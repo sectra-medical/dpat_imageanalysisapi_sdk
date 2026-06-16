@@ -7,6 +7,11 @@ from httpx import Response
 from sectra_dpat_downloader.http_client import HttpClient
 from sectra_dpat_downloader.models import CaseImage, Image
 from sectra_dpat_downloader.multipart import MultipartParser
+from sectra_dpat_downloader.result_models import (
+    QualityControl,
+    Result,
+    ResultResponse,
+)
 
 
 class SectraDpatDownloader:
@@ -224,6 +229,74 @@ class SectraDpatDownloader:
         filename = content_disposition.split("filename=")[1].strip('"')
         chunks = response.iter_bytes(self._chunk_size)
         return self._write_chunks_to_file(chunks, output_folder, filename)
+
+    def create_result(self, result: Result) -> ResultResponse:
+        """Create a result in DPAT.
+
+        Parameters
+        ----------
+        result : Result
+            Result payload to create.
+
+        Returns
+        -------
+        ResultResponse
+            Created result with id and version.
+        """
+        url = f"/applications/{self._application_id}/results"
+        response = self._client.post(url, json=result.model_dump(by_alias=True))
+        return ResultResponse.model_validate(response.json())
+
+    def get_result(self, result_id: str) -> ResultResponse:
+        """Get a result by id.
+
+        Parameters
+        ----------
+        result_id : str
+            The result id.
+
+        Returns
+        -------
+        ResultResponse
+            The result.
+        """
+        url = f"/applications/{self._application_id}/results/{result_id}"
+        response = self._client.get(url)
+        return ResultResponse.model_validate(response.json())
+
+    def update_result(self, result_id: str, result: Result) -> ResultResponse:
+        """Update an existing result.
+
+        Parameters
+        ----------
+        result_id : str
+            The result id to update.
+        result : Result
+            Updated result payload.
+
+        Returns
+        -------
+        ResultResponse
+            Updated result with id and version.
+        """
+        url = f"/applications/{self._application_id}/results/{result_id}"
+        response = self._client.put(url, json=result.model_dump(by_alias=True))
+        return ResultResponse.model_validate(response.json())
+
+    def set_quality_control(
+        self, slide_id: str, quality_control: QualityControl
+    ) -> None:
+        """Set quality control for a slide. Available from IA-API 1.10 (DPAT 4.2).
+
+        Parameters
+        ----------
+        slide_id : str
+            The slide id to set quality control for.
+        quality_control : QualityControl
+            Quality control data to set.
+        """
+        url = f"/slides/{slide_id}/qualityControl"
+        self._client.put(url, json=quality_control.model_dump(by_alias=True))
 
     @staticmethod
     def _write_chunks_to_file(
