@@ -25,9 +25,9 @@ To install sectra_dpat_client (until it is published in pypi):
 
 ```pip install .```
 
-To install sectra_dpat_client with development dependencies (linting and formating, see below):
+For development, use [uv](https://docs.astral.sh/uv/). This installs the locked dependencies, including the development tools (linting and formatting, see below):
 
-```pip install ./[dev]```
+```uv sync```
 
 ## Usage
 

@@ -50,3 +50,6 @@ Thumbs.db
 
 **/*.egg-info
 **/*build
+
+# uv virtual environment
+.venv/

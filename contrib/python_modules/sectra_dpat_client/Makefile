@@ -2,13 +2,13 @@ SHELL=bash
 
 .PHONY: format
 format:
-	isort .;
-	black .
+	uv run isort .;
+	uv run black .
 
 .PHONY: lint
 lint:
-	flake8 sectra_dpat_client/
-	bandit -c .bandit.yml -r sectra_dpat_client/
-	isort --check sectra_dpat_client/
-	black sectra_dpat_client/ --check --diff
-	mypy sectra_dpat_client/
+	uv run flake8 sectra_dpat_client/
+	uv run bandit -c .bandit.yml -r sectra_dpat_client/
+	uv run isort --check sectra_dpat_client/
+	uv run black sectra_dpat_client/ --check --diff
+	uv run mypy sectra_dpat_client/
