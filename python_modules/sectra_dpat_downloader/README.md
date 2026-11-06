@@ -25,12 +25,44 @@ client = SectraDpatDownloader.from_credentials(
     'base url', 'application id', 'user name', 'password'
 )
 
+api_info = client.get_api_info()  # api_version, software_version
+
 images = client.get_images_in_case("accession number")
+# Or, when only the id of one slide in the case is known:
+images = client.get_images_in_case_of_slide("slide id")
 
 for image in images:
     image_metadata = client.get_image_metadata(image.id)
     image_label = client.get_image_label(image.id)
     image_files = client.download_image_files(image.id, "output path")
+```
+
+Tiles are addressed as in the Deep Zoom (DZI) format, where level 0 is the image
+as a single pixel and the full resolution is at
+`ceil(log2(max(width, height)))` of the image size in the metadata:
+
+```python
+tile = client.get_tile(image.id, level, x, y, "jpg")
+```
+
+Results are stored per application. Attachments are declared in the result,
+with state `new`, before they are uploaded; uploads larger than the chunk size
+are sent in consecutive ranges:
+
+```python
+from sectra_dpat_downloader.result_models import Attachment, AttachmentState, Result
+
+result = client.create_result(
+    Result(
+        slide_id=image.id,
+        display_result="Result",
+        application_version="1.0.0",
+        attachments=[Attachment(name="data.bin", state=AttachmentState.NEW)],
+    )
+)
+client.upload_result_attachment(str(result.id), "data.bin", "path/to/data.bin")
+results = client.get_results_for_slide(image.id)
+attachment = client.download_result_attachment(str(result.id), "data.bin", "output path")
 ```
 
 To reuse an existing, configured HTTP client (for example a singleton managed

@@ -1,7 +1,7 @@
 import datetime
 import threading
 from http import HTTPStatus
-from typing import Optional
+from typing import Dict, Optional
 
 import httpx
 
@@ -164,8 +164,14 @@ class HttpClient:
         )
         return self._raise_for_status(response)
 
-    def put(self, url: str, json: object = None) -> httpx.Response:
-        """Put json to url.
+    def put(
+        self,
+        url: str,
+        json: object = None,
+        content: Optional[bytes] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> httpx.Response:
+        """Put json, or raw content, to url.
 
         Parameters
         ----------
@@ -173,6 +179,10 @@ class HttpClient:
             Url to put to.
         json: object
             JSON-serializable body.
+        content: Optional[bytes] = None
+            Raw body, sent instead of json.
+        headers: Optional[Dict[str, str]] = None
+            Headers to send with the request, in addition to the authorization.
 
         Returns
         -------
@@ -182,7 +192,13 @@ class HttpClient:
         """
         generation = self._ensure_token()
         response = self._request_with_retry(
-            "PUT", self._base_url + url, 1, generation, json=json
+            "PUT",
+            self._base_url + url,
+            1,
+            generation,
+            json=json,
+            content=content,
+            headers=headers,
         )
         return self._raise_for_status(response)
 
@@ -194,13 +210,17 @@ class HttpClient:
         generation: int,
         stream: bool = False,
         json: object = None,
+        content: Optional[bytes] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> httpx.Response:
         """Perform a request with token refresh on 401/403 responses."""
         if stream:
-            request = self._client.build_request(method, url)
+            request = self._client.build_request(method, url, headers=headers)
             response = self._client.send(request, stream=True)
         else:
-            response = self._client.request(method, url, json=json)
+            response = self._client.request(
+                method, url, json=json, content=content, headers=headers
+            )
         if (
             response.status_code not in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN)
             or retries <= 0
@@ -217,6 +237,8 @@ class HttpClient:
             self._token_generation,
             stream=stream,
             json=json,
+            content=content,
+            headers=headers,
         )
 
     @staticmethod
