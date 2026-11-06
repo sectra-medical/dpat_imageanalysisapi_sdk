@@ -87,6 +87,11 @@ class Image(CamelCaseBaseModel):
     priority: Optional[int] = None
 
 
+class ApiInfo(CamelCaseBaseModel):
+    api_version: str
+    software_version: str
+
+
 class Token(CamelCaseBaseModel):
     access_token: str
     token_type: str

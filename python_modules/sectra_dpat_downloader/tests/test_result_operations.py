@@ -216,7 +216,7 @@ class TestSetQualityControl:
         # The return value is ignored by the client, so verify the command.
         decoy.verify(
             mock_http.put(
-                "/slides/slide-1/qualityControl", json=matchers.Anything()
+                "/slides/slide-1/qualitycontrol", json=matchers.Anything()
             ),
             times=1,
         )
