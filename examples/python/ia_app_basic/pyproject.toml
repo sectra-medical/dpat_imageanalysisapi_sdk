@@ -20,3 +20,6 @@ build-backend = "hatchling.build"
 dev = [
     "black>=24.10.0",
 ]
+
+[tool.uv]
+exclude-newer = "14 days"

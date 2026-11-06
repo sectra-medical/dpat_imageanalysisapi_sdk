@@ -22,3 +22,6 @@ dev = [
     "black>=24.10.0",
     "ipykernel>=6.29.5",
 ]
+
+[tool.uv]
+exclude-newer = "14 days"
