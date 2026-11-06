@@ -25,6 +25,7 @@ from .invocation import (
     MultiAreaContent,
     TaggedPolygonContent,
 )
+from .quality_control import QualityControl, QualityControlData, QualityControlStatus
 from .registration import InputTemplate, Registration, TaggedPolygonInputContent
 from .results import (
     Attachment,
@@ -43,4 +44,3 @@ from .results import (
     Status,
     Style,
 )
-from .quality_control import QualityControl, QualityControlData, QualityControlStatus
