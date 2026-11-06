@@ -1,0 +1,39 @@
+name: audit
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+  # New advisories appear without code changes, so also run weekly.
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: audit ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - python_modules/sectra_dpat_downloader
+          - contrib/python_modules/sectra_dpat_client
+          - examples/python/ia_app_basic
+          - examples/python/ia_wholeslide
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          version: "0.12.6"
+      # Audits uv.lock against the OSV database; reads the lockfile directly, so no
+      # project install is needed. --locked also asserts uv.lock is up to date.
+      - name: Audit dependencies
+        run: uv audit --locked --preview-features audit-command

@@ -25,6 +25,9 @@ from .schemas import (
     Polygon,
     Polyline,
     PrimitiveItem,
+    QualityControl,
+    QualityControlData,
+    QualityControlStatus,
     Registration,
     Result,
     ResultContent,
@@ -39,7 +42,4 @@ from .schemas import (
     TaggedPolygonContent,
     TaggedPolygonInputContent,
     TileFormat,
-    QualityControl,
-    QualityControlData,
-    QualityControlStatus,
 )

@@ -6,14 +6,13 @@ import requests
 from sectra_dpat_client.errors import DPATRequestError
 from sectra_dpat_client.helpers import JSONPayload, connection_retry
 
-
 from .schemas import (
     ApplicationInfo,
+    CaseImageInfo,
     ImageInfo,
+    QualityControl,
     Result,
     ResultResponse,
-    QualityControl,
-    CaseImageInfo,
 )
 
 logger = logging.getLogger(__name__)

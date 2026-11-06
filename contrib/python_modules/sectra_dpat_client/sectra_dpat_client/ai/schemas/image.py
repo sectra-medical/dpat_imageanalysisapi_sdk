@@ -2,8 +2,8 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-from .quality_control import QualityControlData
 from .common import DisplayedName, Size
+from .quality_control import QualityControlData
 
 
 class FocalPlane(BaseModel):
