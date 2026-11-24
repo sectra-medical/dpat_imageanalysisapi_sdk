@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --extra tqdm
 
 # production stage
-FROM python:3.13-slim AS production
+FROM python:3.15-slim AS production
 
 LABEL maintainer="erik.o.gabrielsson@sectra.com"
 
